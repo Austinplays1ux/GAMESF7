@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import CategoryTabs from "@/components/CategoryTabs";
-import GameCard from "@/components/GameCard";
 import { GameWithDetails } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import GameDetailModal from "@/components/GameDetailModal";
@@ -67,65 +65,224 @@ const Discover: React.FC = () => {
     setIsGamePlayOpen(false);
   };
 
+  // Sample game data for demonstration
+  const sampleGames = [
+    {
+      id: 1, 
+      title: "Bloxd.io", 
+      thumbnailUrl: "https://images.crazygames.com/games/bloxd-io/cover-1600236603408.png"
+    },
+    {
+      id: 2, 
+      title: "1v1.lol", 
+      thumbnailUrl: "https://cdn-cf.crazygames.com/1v1lol.png"
+    },
+    {
+      id: 3, 
+      title: "Sprunki", 
+      thumbnailUrl: "https://i.ytimg.com/vi/zOBzIOz55OQ/maxresdefault.jpg"
+    },
+    {
+      id: 4, 
+      title: "Arena", 
+      thumbnailUrl: "https://img.gamedistribution.com/2b60db08e5d541e3a70efd31bb13d61e-512x384.jpeg"
+    }
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-poppins mb-4">Discover Games</h1>
-        <p className="text-gray-400">
-          Browse and play games from various platforms. Filter by category to find your next favorite game.
-        </p>
-      </div>
+    <div 
+      className="min-h-screen" 
+      style={{
+        background: `linear-gradient(rgba(22, 8, 47, 0.9), rgba(22, 8, 47, 0.97)), 
+                  url('https://cdn.replit.com/_next/static/media/replit-home.a4e6a113.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      <div className="container mx-auto px-4 py-10">
+        {/* Page title */}
+        <div className="text-center mb-16">
+          <h1 className="text-6xl font-bold mb-2" style={{ fontFamily: 'Sofia Pro, sans-serif' }}>
+            EXPLORE
+          </h1>
+        </div>
 
-      <CategoryTabs
-        activeCategory={activeCategory}
-        onCategoryChange={handleCategoryChange}
-      />
-
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {Array(8).fill(0).map((_, i) => (
-            <div key={i} className="bg-[#1E1E1E] rounded-lg overflow-hidden">
-              <Skeleton className="w-full h-48" />
-              <div className="p-4">
-                <Skeleton className="h-6 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-full mb-3" />
-                <Skeleton className="h-4 w-5/6 mb-3" />
-                <div className="flex justify-between">
-                  <Skeleton className="h-6 w-24" />
-                  <Skeleton className="h-6 w-12" />
+        {/* Game sections */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-6">Recommended:</h2>
+          
+          {isLoading ? (
+            <div className="flex flex-wrap gap-4">
+              {Array(4).fill(0).map((_, i) => (
+                <div key={i} className="w-64 rounded-lg overflow-hidden">
+                  <Skeleton className="w-full h-36" />
+                  <div className="p-2 bg-[#16082F]">
+                    <Skeleton className="h-4 w-32" />
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ) : games.length === 0 ? (
-        <div className="py-12 text-center">
-          <div className="text-6xl mb-4">🎮</div>
-          <h2 className="text-2xl font-bold mb-2">No Games Found</h2>
-          <p className="text-gray-400 mb-4">
-            We couldn't find any games for this category.
-          </p>
-          <p className="text-gray-400">
-            Try selecting a different category or{" "}
-            <a href="/create" className="text-[#007AF4] hover:underline">
-              create your own game
-            </a>
-            .
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {games.map((game) => (
-            <div key={game.id} onClick={() => handleOpenGameDetail(game)}>
-              <GameCard
-                game={game}
-                platform={game.platform}
-                creator={game.creator}
-              />
+          ) : games.length > 0 ? (
+            <div className="flex flex-wrap gap-4">
+              {games.slice(0, 4).map((game) => (
+                <div 
+                  key={game.id} 
+                  className="w-64 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => handleOpenGameDetail(game)}
+                >
+                  <div className="relative">
+                    <img 
+                      src={game.thumbnailUrl} 
+                      alt={game.title} 
+                      className="w-full h-36 object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
+                      <p className="text-white text-xl font-bold">{game.title}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <div className="flex flex-wrap gap-4">
+              {sampleGames.map((game) => (
+                <div 
+                  key={game.id} 
+                  className="w-64 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
+                >
+                  <div className="relative">
+                    <img 
+                      src={game.thumbnailUrl} 
+                      alt={game.title} 
+                      className="w-full h-36 object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
+                      <p className="text-white text-xl font-bold">{game.title}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-6">Featured:</h2>
+          
+          {isLoading ? (
+            <div className="flex flex-wrap gap-4">
+              {Array(4).fill(0).map((_, i) => (
+                <div key={i} className="w-64 rounded-lg overflow-hidden">
+                  <Skeleton className="w-full h-36" />
+                  <div className="p-2 bg-[#16082F]">
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : games.length > 0 ? (
+            <div className="flex flex-wrap gap-4">
+              {games.slice(0, 4).map((game) => (
+                <div 
+                  key={game.id} 
+                  className="w-64 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => handleOpenGameDetail(game)}
+                >
+                  <div className="relative">
+                    <img 
+                      src={game.thumbnailUrl} 
+                      alt={game.title} 
+                      className="w-full h-36 object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
+                      <p className="text-white text-xl font-bold">{game.title}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-4">
+              {sampleGames.map((game) => (
+                <div 
+                  key={game.id} 
+                  className="w-64 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
+                >
+                  <div className="relative">
+                    <img 
+                      src={game.thumbnailUrl} 
+                      alt={game.title} 
+                      className="w-full h-36 object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
+                      <p className="text-white text-xl font-bold">{game.title}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-6">Fortnite Gamemodes:</h2>
+          
+          {isLoading ? (
+            <div className="flex flex-wrap gap-4">
+              {Array(4).fill(0).map((_, i) => (
+                <div key={i} className="w-64 rounded-lg overflow-hidden">
+                  <Skeleton className="w-full h-36" />
+                  <div className="p-2 bg-[#16082F]">
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : games.length > 0 ? (
+            <div className="flex flex-wrap gap-4">
+              {games.filter(game => game.platform.name === "Fortnite").slice(0, 4).map((game) => (
+                <div 
+                  key={game.id} 
+                  className="w-64 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => handleOpenGameDetail(game)}
+                >
+                  <div className="relative">
+                    <img 
+                      src={game.thumbnailUrl} 
+                      alt={game.title} 
+                      className="w-full h-36 object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
+                      <p className="text-white text-xl font-bold">{game.title}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-4">
+              {sampleGames.slice(0, 2).map((game) => (
+                <div 
+                  key={game.id} 
+                  className="w-64 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
+                >
+                  <div className="relative">
+                    <img 
+                      src={game.thumbnailUrl} 
+                      alt={game.title} 
+                      className="w-full h-36 object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
+                      <p className="text-white text-xl font-bold">{game.title}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Game Modals */}
       {selectedGame && (

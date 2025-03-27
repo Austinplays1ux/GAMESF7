@@ -1,29 +1,33 @@
 import { Link } from "wouter";
-import Logo from "./Logo";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#1E1E1E] py-10">
+    <footer className="bg-[#16082F] py-8 border-t border-[#2A2A2A]">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center mb-4">
-              <Logo size="sm" />
+              <span className="text-white text-xl font-bold" style={{ 
+                fontFamily: 'Sofia Pro, sans-serif',
+                letterSpacing: '1px'
+              }}>
+                GAMESF7
+              </span>
             </div>
             <p className="text-gray-400 mb-4">
-              Share and play games together. Your ultimate gaming platform for HTML games and more.
+              Your ultimate gaming platform for HTML games, Roblox, Fortnite and RecRoom.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+              <a href="#" className="text-purple-400 hover:text-purple-300 transition-colors">
                 <i className="fab fa-twitter"></i>
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+              <a href="#" className="text-purple-400 hover:text-purple-300 transition-colors">
                 <i className="fab fa-discord"></i>
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+              <a href="#" className="text-purple-400 hover:text-purple-300 transition-colors">
                 <i className="fab fa-instagram"></i>
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+              <a href="#" className="text-purple-400 hover:text-purple-300 transition-colors">
                 <i className="fab fa-youtube"></i>
               </a>
             </div>
@@ -34,37 +38,37 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li>
                 <Link href="/discover">
-                  <a className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                  <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                     Featured Games
-                  </a>
+                  </div>
                 </Link>
               </li>
               <li>
                 <Link href="/discover?platform=1">
-                  <a className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                  <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                     HTML Games
-                  </a>
+                  </div>
                 </Link>
               </li>
               <li>
                 <Link href="/discover?platform=2">
-                  <a className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                  <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                     Roblox
-                  </a>
+                  </div>
                 </Link>
               </li>
               <li>
                 <Link href="/discover?platform=3">
-                  <a className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                  <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                     Fortnite
-                  </a>
+                  </div>
                 </Link>
               </li>
               <li>
                 <Link href="/discover?platform=4">
-                  <a className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                  <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                     RecRoom
-                  </a>
+                  </div>
                 </Link>
               </li>
             </ul>
@@ -75,32 +79,32 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li>
                 <Link href="/create">
-                  <a className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                  <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                     Game Templates
-                  </a>
+                  </div>
                 </Link>
               </li>
               <li>
                 <Link href="/create">
-                  <a className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                  <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                     HTML Game Builder
-                  </a>
+                  </div>
                 </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                   Developer Resources
-                </a>
+                </div>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                   Documentation
-                </a>
+                </div>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                   API
-                </a>
+                </div>
               </li>
             </ul>
           </div>
@@ -109,36 +113,36 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4">Support</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                   Help Center
-                </a>
+                </div>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                   Community Forum
-                </a>
+                </div>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                   Contact Us
-                </a>
+                </div>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                   Privacy Policy
-                </a>
+                </div>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-[#007AF4] transition-colors">
+                <div className="text-gray-400 hover:text-purple-300 transition-colors cursor-pointer">
                   Terms of Service
-                </a>
+                </div>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-[#2A2A2A] text-center text-gray-500 text-sm">
-          <p>&copy; {new Date().getFullYear()} GAMESF7. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} GAMESF7 Alpha. All rights reserved.</p>
         </div>
       </div>
     </footer>

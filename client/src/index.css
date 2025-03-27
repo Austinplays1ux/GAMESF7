@@ -11,3 +11,52 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Font Definitions */
+@font-face {
+  font-family: 'Sofia Pro';
+  src: local('Sofia Pro'), local('SofiaPro'),
+       url('https://fonts.cdnfonts.com/css/sofia-pro') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Custom Styles */
+:root {
+  --primary-color: #8833FF;
+  --primary-hover: #7929E9;
+  --secondary-color: #FF3399;
+  --secondary-hover: #E92982;
+  --background-dark: #16082F;
+  --background-darker: #0D041F;
+  --text-primary: #FFFFFF;
+  --text-secondary: #BBBBBB;
+}
+
+body {
+  background-color: var(--background-dark);
+  color: var(--text-primary);
+}
+
+.sofia-pro {
+  font-family: 'Sofia Pro', 'Poppins', 'Inter', sans-serif;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-bg {
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.game-card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.game-card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}

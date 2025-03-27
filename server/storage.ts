@@ -5,6 +5,8 @@ import {
   games, type Game, type InsertGame, type GameWithDetails,
   gameTags, type GameTag, type InsertGameTag
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 // Define storage interface
 export interface IStorage {
@@ -39,6 +41,7 @@ export interface IStorage {
   addGameTag(gameTag: InsertGameTag): Promise<GameTag>;
 }
 
+// In-memory storage implementation
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private platforms: Map<number, Platform>;
@@ -143,7 +146,12 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userId++;
     const now = new Date();
-    const user: User = { ...insertUser, id, createdAt: now };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      createdAt: now,
+      avatarUrl: insertUser.avatarUrl || null
+    };
     this.users.set(id, user);
     return user;
   }
@@ -206,7 +214,8 @@ export class MemStorage implements IStorage {
       isFeatured: false, 
       plays: 0, 
       rating: 0, 
-      createdAt: now 
+      createdAt: now,
+      htmlContent: insertGame.htmlContent || null 
     };
     this.games.set(id, game);
     return game;
@@ -264,4 +273,141 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
+  // Users
+  async getUser(id: number): Promise<User | undefined> {
+    const results = await db.select().from(users).where(eq(users.id, id));
+    return results.length ? results[0] : undefined;
+  }
+  
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const results = await db.select().from(users).where(eq(users.username, username));
+    return results.length ? results[0] : undefined;
+  }
+  
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const userWithNullAvatar = {
+      ...insertUser,
+      avatarUrl: insertUser.avatarUrl || null
+    };
+    const [user] = await db.insert(users).values(userWithNullAvatar).returning();
+    return user;
+  }
+  
+  // Platforms
+  async getPlatforms(): Promise<Platform[]> {
+    return db.select().from(platforms);
+  }
+  
+  async getPlatform(id: number): Promise<Platform | undefined> {
+    const results = await db.select().from(platforms).where(eq(platforms.id, id));
+    return results.length ? results[0] : undefined;
+  }
+  
+  async getPlatformByName(name: string): Promise<Platform | undefined> {
+    const results = await db.select().from(platforms).where(eq(platforms.name, name));
+    return results.length ? results[0] : undefined;
+  }
+  
+  async createPlatform(insertPlatform: InsertPlatform): Promise<Platform> {
+    const [platform] = await db.insert(platforms).values(insertPlatform).returning();
+    return platform;
+  }
+  
+  // Categories
+  async getCategories(): Promise<Category[]> {
+    return db.select().from(categories);
+  }
+  
+  async getCategory(id: number): Promise<Category | undefined> {
+    const results = await db.select().from(categories).where(eq(categories.id, id));
+    return results.length ? results[0] : undefined;
+  }
+  
+  async createCategory(insertCategory: InsertCategory): Promise<Category> {
+    const [category] = await db.insert(categories).values(insertCategory).returning();
+    return category;
+  }
+  
+  // Games
+  async getGames(): Promise<Game[]> {
+    return db.select().from(games);
+  }
+  
+  async getGame(id: number): Promise<Game | undefined> {
+    const results = await db.select().from(games).where(eq(games.id, id));
+    return results.length ? results[0] : undefined;
+  }
+  
+  async getGameByTitle(title: string): Promise<Game | undefined> {
+    const results = await db.select().from(games).where(eq(games.title, title));
+    return results.length ? results[0] : undefined;
+  }
+  
+  async createGame(insertGame: InsertGame): Promise<Game> {
+    const gameWithDefaults = {
+      ...insertGame,
+      isFeatured: false,
+      plays: 0,
+      rating: 0,
+      htmlContent: insertGame.htmlContent || null
+    };
+    const [game] = await db.insert(games).values(gameWithDefaults).returning();
+    return game;
+  }
+  
+  async getFeaturedGames(): Promise<Game[]> {
+    return db.select().from(games).where(eq(games.isFeatured, true));
+  }
+  
+  async getGamesByPlatform(platformId: number): Promise<Game[]> {
+    return db.select().from(games).where(eq(games.platformId, platformId));
+  }
+  
+  async getGameDetails(gameId: number): Promise<GameWithDetails | undefined> {
+    const game = await this.getGame(gameId);
+    if (!game) return undefined;
+    
+    const platform = await this.getPlatform(game.platformId);
+    if (!platform) return undefined;
+    
+    const creator = await this.getUser(game.creatorId);
+    if (!creator) return undefined;
+    
+    const gameTags = await this.getGameTags(gameId);
+    const categoryPromises = gameTags.map(tag => this.getCategory(tag.categoryId));
+    const categoryResults = await Promise.all(categoryPromises);
+    const categories = categoryResults.filter((cat): cat is Category => cat !== undefined);
+    
+    return {
+      ...game,
+      platform,
+      creator,
+      categories
+    };
+  }
+  
+  async incrementGamePlays(gameId: number): Promise<void> {
+    const game = await this.getGame(gameId);
+    if (game) {
+      await db
+        .update(games)
+        .set({ plays: game.plays + 1 })
+        .where(eq(games.id, gameId));
+    }
+  }
+  
+  // Game Tags
+  async getGameTags(gameId: number): Promise<GameTag[]> {
+    return db.select().from(gameTags).where(eq(gameTags.gameId, gameId));
+  }
+  
+  async addGameTag(insertGameTag: InsertGameTag): Promise<GameTag> {
+    const [gameTag] = await db.insert(gameTags).values(insertGameTag).returning();
+    return gameTag;
+  }
+}
+
+// Use DatabaseStorage for persistence
+export const storage = new DatabaseStorage();
