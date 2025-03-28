@@ -134,7 +134,7 @@ const Login: React.FC = () => {
     <div 
       className="min-h-screen flex flex-col md:flex-row"
       style={{
-        background: "#16082F",
+        background: "#0c041c",
       }}
     >
       {/* Left panel with form */}
@@ -221,7 +221,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="signup-email" 
                     type="email" 
-                    className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
+                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
                     placeholder="Enter your email"
                     value={signupForm.email}
                     onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
@@ -233,7 +233,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="signup-password" 
                     type="password" 
-                    className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
+                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
                     placeholder="Create a password"
                     value={signupForm.password}
                     onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
@@ -245,7 +245,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="signup-confirm" 
                     type="password" 
-                    className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
+                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
                     placeholder="Confirm your password"
                     value={signupForm.confirmPassword}
                     onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
@@ -280,7 +280,7 @@ const Login: React.FC = () => {
       <div 
         className="hidden md:flex md:w-1/2 bg-cover bg-center items-center justify-center p-8"
         style={{
-          backgroundImage: "linear-gradient(rgba(22, 8, 47, 0.8), rgba(22, 8, 47, 0.8)), url('https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80')",
+          backgroundImage: "linear-gradient(rgba(12, 4, 28, 0.9), rgba(12, 4, 28, 0.9)), url('https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80')",
         }}
       >
         <div className="max-w-lg text-center">
