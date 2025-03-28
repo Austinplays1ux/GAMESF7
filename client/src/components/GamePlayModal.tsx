@@ -70,7 +70,7 @@ const GamePlayModal: React.FC<GamePlayModalProps> = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-[#1E1E1E] text-white max-w-6xl h-[90vh] max-h-[90vh] flex flex-col border-0 p-0">
+      <DialogContent className="glass-card text-white max-w-6xl h-[90vh] max-h-[90vh] flex flex-col border-0 p-0">
         <div className="flex justify-between items-center p-4 border-b border-[#2A2A2A]">
           <DialogTitle className="text-lg font-semibold">Playing: {game.title}</DialogTitle>
           <div className="flex items-center space-x-2">

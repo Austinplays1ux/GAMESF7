@@ -83,7 +83,7 @@ export class MemStorage implements IStorage {
     };
     const robloxPlatform: InsertPlatform = { 
       name: "Roblox", 
-      icon: "fas fa-cube", 
+      icon: "/images/platforms/roblox-icon.webp", 
       description: "Share your Roblox experiences and games with the community.",
       color: "#6C2FF2"
     };

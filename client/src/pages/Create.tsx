@@ -37,8 +37,8 @@ const Create: React.FC = () => {
           </Button>
         </div>
 
-        <div className="bg-[#1E1E1E] rounded-xl p-8 mb-10">
-          <h2 className="text-2xl font-bold font-poppins mb-6">Supported Platforms</h2>
+        <div className="glass-card rounded-xl p-8 mb-10">
+          <h2 className="text-2xl font-bold font-poppins mb-6 gradient-text">Supported Platforms</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {platforms.map((platform) => (
               <div key={platform.id} className="flex items-start">
@@ -46,7 +46,11 @@ const Create: React.FC = () => {
                   className="w-12 h-12 flex items-center justify-center rounded-full mr-4 flex-shrink-0"
                   style={{ backgroundColor: `${platform.color}20` }}
                 >
-                  <i className={`${platform.icon} text-2xl`} style={{ color: platform.color }}></i>
+                  {platform.icon.startsWith('/') ? (
+                    <img src={platform.icon} alt={platform.name} className="w-8 h-8 object-contain" />
+                  ) : (
+                    <i className={`${platform.icon} text-2xl`} style={{ color: platform.color }}></i>
+                  )}
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold font-montserrat mb-2">{platform.name} Games</h3>
@@ -57,38 +61,38 @@ const Create: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[#1E1E1E] rounded-xl p-8 mb-10">
-          <h2 className="text-2xl font-bold font-poppins mb-6">HTML Game Templates</h2>
+        <div className="glass-card rounded-xl p-8 mb-10">
+          <h2 className="text-2xl font-bold font-poppins mb-6 gradient-text">HTML Game Templates</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-[#121212] rounded-lg p-5 hover:shadow-lg transition-shadow text-center">
+            <div className="glass-card rounded-lg p-5 hover:shadow-lg transition-shadow text-center">
               <div className="w-16 h-16 flex items-center justify-center bg-[#007AF4]/20 rounded-full mx-auto mb-4">
                 <i className="fas fa-running text-3xl text-[#007AF4]"></i>
               </div>
               <h3 className="text-lg font-semibold font-montserrat mb-2">Platformer</h3>
               <p className="text-gray-400 text-sm mb-4">Jump and run through obstacles and collect items</p>
-              <Button variant="outline" className="text-[#007AF4] border-[#007AF4]" onClick={handleOpenCreateModal}>
+              <Button variant="outline" className="glass-button text-[#007AF4] border-[#007AF4]" onClick={handleOpenCreateModal}>
                 Use Template
               </Button>
             </div>
 
-            <div className="bg-[#121212] rounded-lg p-5 hover:shadow-lg transition-shadow text-center">
+            <div className="glass-card rounded-lg p-5 hover:shadow-lg transition-shadow text-center">
               <div className="w-16 h-16 flex items-center justify-center bg-[#6C2FF2]/20 rounded-full mx-auto mb-4">
                 <i className="fas fa-puzzle-piece text-3xl text-[#6C2FF2]"></i>
               </div>
               <h3 className="text-lg font-semibold font-montserrat mb-2">Puzzle</h3>
               <p className="text-gray-400 text-sm mb-4">Challenge the mind with logical puzzles</p>
-              <Button variant="outline" className="text-[#6C2FF2] border-[#6C2FF2]" onClick={handleOpenCreateModal}>
+              <Button variant="outline" className="glass-button text-[#6C2FF2] border-[#6C2FF2]" onClick={handleOpenCreateModal}>
                 Use Template
               </Button>
             </div>
 
-            <div className="bg-[#121212] rounded-lg p-5 hover:shadow-lg transition-shadow text-center">
+            <div className="glass-card rounded-lg p-5 hover:shadow-lg transition-shadow text-center">
               <div className="w-16 h-16 flex items-center justify-center bg-[#FF5722]/20 rounded-full mx-auto mb-4">
                 <i className="fas fa-crosshairs text-3xl text-[#FF5722]"></i>
               </div>
               <h3 className="text-lg font-semibold font-montserrat mb-2">Shooter</h3>
               <p className="text-gray-400 text-sm mb-4">Fast-paced action with shooting mechanics</p>
-              <Button variant="outline" className="text-[#FF5722] border-[#FF5722]" onClick={handleOpenCreateModal}>
+              <Button variant="outline" className="glass-button text-[#FF5722] border-[#FF5722]" onClick={handleOpenCreateModal}>
                 Use Template
               </Button>
             </div>

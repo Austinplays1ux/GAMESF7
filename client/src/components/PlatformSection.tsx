@@ -27,11 +27,15 @@ const PlatformSection: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {platforms.map((platform) => (
-          <div key={platform.id} className="bg-[#1E1E1E] rounded-lg p-5 hover:shadow-lg transition-shadow">
+          <div key={platform.id} className="glass-card rounded-lg p-5 hover:shadow-lg transition-shadow">
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 flex items-center justify-center rounded-full mb-4" 
                    style={{ backgroundColor: `${platform.color}20` }}>
-                <i className={`${platform.icon} text-3xl`} style={{ color: platform.color }}></i>
+                {platform.icon.startsWith('/') ? (
+                  <img src={platform.icon} alt={platform.name} className="w-10 h-10 object-contain" />
+                ) : (
+                  <i className={`${platform.icon} text-3xl`} style={{ color: platform.color }}></i>
+                )}
               </div>
               <h3 className="text-lg font-semibold font-montserrat mb-2">{platform.name} Games</h3>
               <p className="text-gray-400 text-sm mb-4">{platform.description}</p>

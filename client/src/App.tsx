@@ -35,7 +35,7 @@ function Router() {
           <ProtectedRoute path="/create" component={Create} />
           <ProtectedRoute path="/games/:id" component={GameDetails} />
           <ProtectedRoute path="/play/:id" component={GamePlayer} />
-          <Route component={NotFound} />
+          <Route path="*" component={NotFound} />
         </Switch>
       </div>
       {!isLoginPage && <Footer />}

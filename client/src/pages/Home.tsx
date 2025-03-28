@@ -251,8 +251,8 @@ const Home: React.FC = () => {
           </div>
           
           <div className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-lg p-6 transform transition-transform hover:scale-105">
-            <div className="mb-4 text-3xl">
-              <i className="fas fa-gamepad"></i>
+            <div className="mb-4">
+              <img src="/images/platforms/roblox-icon.webp" alt="Roblox" className="w-12 h-12" />
             </div>
             <h3 className="text-xl font-bold mb-2">Roblox Games</h3>
             <p className="text-gray-200 mb-4">Discover the best Roblox games created by the community.</p>

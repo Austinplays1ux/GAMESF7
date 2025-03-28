@@ -50,7 +50,7 @@ const GameDetailModal: React.FC<GameDetailModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-[#1E1E1E] text-white max-w-4xl max-h-[90vh] overflow-auto border-0 p-0">
+      <DialogContent className="glass-card text-white max-w-4xl max-h-[90vh] overflow-auto border-0 p-0">
         <div className="relative">
           <img
             src={game.thumbnailUrl}

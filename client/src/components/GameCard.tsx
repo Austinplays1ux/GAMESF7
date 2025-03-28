@@ -14,7 +14,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, platform, creator }) => {
   }).format(game.plays);
 
   return (
-    <div className="bg-[#1E1E1E] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow transform hover:-translate-y-1 transition-transform">
+    <div className="glass-card rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
       <Link href={`/games/${game.id}`}>
         <a>
           <div className="relative">
