@@ -279,7 +279,7 @@ const Login: React.FC = () => {
       <div 
         className="hidden md:flex md:w-1/2 bg-cover bg-center items-center justify-center p-8"
         style={{
-          backgroundImage: "linear-gradient(rgba(12, 4, 28, 0.9), rgba(12, 4, 28, 0.9)), url('https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80')",
+          backgroundImage: "linear-gradient(rgba(12, 4, 28, 0.9), rgba(12, 4, 28, 0.9)), url('/images/sprunk-games-bg.jpg')",
         }}
       >
         <div className="max-w-lg text-center">
