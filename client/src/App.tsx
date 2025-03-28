@@ -9,6 +9,8 @@ import Discover from "@/pages/Discover";
 import Create from "@/pages/Create";
 import GameDetails from "@/pages/GameDetails";
 import GamePlayer from "@/pages/GamePlayer";
+import Settings from "@/pages/Settings";
+import MyGames from "@/pages/MyGames";
 import AppHeader from "@/components/AppHeader";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -35,6 +37,8 @@ function Router() {
           <ProtectedRoute path="/create" component={Create} />
           <ProtectedRoute path="/games/:id" component={GameDetails} />
           <ProtectedRoute path="/play/:id" component={GamePlayer} />
+          <ProtectedRoute path="/settings" component={Settings} />
+          <ProtectedRoute path="/my-games" component={MyGames} />
           <Route path="*" component={NotFound} />
         </Switch>
       </div>

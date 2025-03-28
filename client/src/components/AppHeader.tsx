@@ -98,15 +98,21 @@ const AppHeader: React.FC = () => {
                     {user.username}
                   </div>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem className="flex items-center cursor-pointer">
-                    <i className="fas fa-user mr-2"></i> Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center cursor-pointer">
-                    <i className="fas fa-cog mr-2"></i> Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center cursor-pointer">
-                    <i className="fas fa-gamepad mr-2"></i> My Games
-                  </DropdownMenuItem>
+                  <Link href="/profile">
+                    <DropdownMenuItem className="flex items-center cursor-pointer">
+                      <i className="fas fa-user mr-2"></i> Profile
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link href="/settings">
+                    <DropdownMenuItem className="flex items-center cursor-pointer">
+                      <i className="fas fa-cog mr-2"></i> Settings
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link href="/my-games">
+                    <DropdownMenuItem className="flex items-center cursor-pointer">
+                      <i className="fas fa-gamepad mr-2"></i> My Games
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem 
                     className="flex items-center text-red-400 cursor-pointer" 

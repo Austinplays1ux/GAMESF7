@@ -39,6 +39,7 @@ import { DialogClose } from "@radix-ui/react-dialog";
 interface CreateGameModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 const createGameSchema = z.object({
@@ -56,6 +57,7 @@ type CreateGameFormValues = z.infer<typeof createGameSchema>;
 const CreateGameModal: React.FC<CreateGameModalProps> = ({
   isOpen,
   onClose,
+  onSuccess,
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -103,6 +105,9 @@ const CreateGameModal: React.FC<CreateGameModalProps> = ({
         title: "Success!",
         description: "Your game has been created.",
       });
+      if (onSuccess) {
+        onSuccess();
+      }
       onClose();
       form.reset();
     },
