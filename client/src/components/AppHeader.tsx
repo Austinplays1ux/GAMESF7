@@ -2,23 +2,32 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useQuery } from "@tanstack/react-query";
-import { User } from "@/types";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/use-auth";
 import Logo from "./Logo";
 
 const AppHeader: React.FC = () => {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  // For a real app, this would fetch the current user
-  const { data: currentUser } = useQuery<User | null>({
-    queryKey: ["/api/auth/me"],
-    enabled: false, // Disable this query until we have auth
-  });
+  const { user, logout } = useAuth();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Failed to logout:', error);
+    }
   };
 
   return (
@@ -73,22 +82,48 @@ const AppHeader: React.FC = () => {
 
           {/* Auth buttons / User profile */}
           <div className="flex items-center space-x-4">
-            {currentUser ? (
-              <div className="relative">
-                <img
-                  className="h-8 w-8 rounded-full"
-                  src={currentUser.avatarUrl || `https://ui-avatars.com/api/?name=${currentUser.username}&background=7E57C2&color=fff`}
-                  alt="User profile"
-                />
-              </div>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="h-9 w-9 rounded-full overflow-hidden border border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50">
+                    <img
+                      className="h-full w-full object-cover"
+                      src={user.avatarUrl || `https://ui-avatars.com/api/?name=${user.username}&background=7E57C2&color=fff`}
+                      alt={user.username}
+                    />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="glass-dropdown min-w-[200px] p-2" align="end">
+                  <div className="px-2 py-1.5 text-sm font-medium gradient-text">
+                    {user.username}
+                  </div>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem className="flex items-center cursor-pointer">
+                    <i className="fas fa-user mr-2"></i> Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="flex items-center cursor-pointer">
+                    <i className="fas fa-cog mr-2"></i> Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="flex items-center cursor-pointer">
+                    <i className="fas fa-gamepad mr-2"></i> My Games
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem 
+                    className="flex items-center text-red-400 cursor-pointer" 
+                    onClick={handleLogout}
+                  >
+                    <i className="fas fa-sign-out-alt mr-2"></i> Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <div className="hidden md:flex items-center space-x-2">
-                <Link href="/auth/login">
+                <Link href="/login">
                   <Button variant="outline" className="glass-button text-white border-white/10">
                     Log in
                   </Button>
                 </Link>
-                <Link href="/auth/signup">
+                <Link href="/signup">
                   <Button className="glass-button bg-purple-600/60 hover:bg-purple-600/80 text-white">
                     Sign up
                   </Button>
@@ -128,19 +163,26 @@ const AppHeader: React.FC = () => {
             <i className="fas fa-coins mr-2"></i> Currency
           </div>
           
-          {!currentUser && (
+          {!user ? (
             <>
-              <Link href="/auth/login">
+              <Link href="/login">
                 <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
                   <i className="fas fa-sign-in-alt mr-2"></i> Log in
                 </div>
               </Link>
-              <Link href="/auth/signup">
+              <Link href="/signup">
                 <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro gradient-text hover:bg-purple-900/30 glass-button">
                   <i className="fas fa-user-plus mr-2"></i> Sign up
                 </div>
               </Link>
             </>
+          ) : (
+            <div 
+              className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-red-400 hover:bg-purple-900/30 glass-button"
+              onClick={handleLogout}
+            >
+              <i className="fas fa-sign-out-alt mr-2"></i> Logout
+            </div>
           )}
         </div>
       </div>

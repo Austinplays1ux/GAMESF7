@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 import { InsertUser } from "@shared/schema";
 import { z } from "zod";
 import Logo from "@/components/Logo";
@@ -25,7 +25,9 @@ const Login: React.FC = () => {
   const [, navigate] = useLocation();
   const [match, params] = useRoute('/auth/:mode?');
   const { toast } = useToast();
+  const { user, login, register, isLoading: authLoading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Set initial form state based on URL
   useEffect(() => {
@@ -35,6 +37,13 @@ const Login: React.FC = () => {
       setIsLogin(true);
     }
   }, [match, params]);
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/home');
+    }
+  }, [user, navigate]);
   
   // Login form state
   const [loginForm, setLoginForm] = useState<LoginFormData>({
@@ -50,9 +59,6 @@ const Login: React.FC = () => {
     confirmPassword: ""
   });
 
-  // Loading state
-  const [isLoading, setIsLoading] = useState(false);
-
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginForm.username || !loginForm.password) {
@@ -67,27 +73,10 @@ const Login: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const response = await apiRequest("POST", "/api/login", loginForm);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
-      }
-      
-      const userData = await response.json();
-      
-      toast({
-        title: "Login successful!",
-        description: `Welcome back, ${userData.username}!`,
-      });
-      
-      navigate("/home");
+      await login(loginForm);
+      // Navigate is handled by the useEffect hook that watches for user changes
     } catch (error) {
-      toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid username or password",
-        variant: "destructive",
-      });
+      // Error handling is done in the login function
     } finally {
       setIsLoading(false);
     }
@@ -131,28 +120,10 @@ const Login: React.FC = () => {
     
     try {
       const { confirmPassword, ...userData } = signupForm;
-      
-      const response = await apiRequest("POST", "/api/users", userData);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create account");
-      }
-      
-      const newUser = await response.json();
-      
-      toast({
-        title: "Account created!",
-        description: `Welcome to GAMESF7, ${newUser.username}!`,
-      });
-      
-      navigate("/home");
+      await register(userData);
+      // Navigate is handled by the useEffect hook that watches for user changes
     } catch (error) {
-      toast({
-        title: "Signup failed",
-        description: error instanceof Error ? error.message : "There was an error creating your account",
-        variant: "destructive",
-      });
+      // Error handling is done in the register function
     } finally {
       setIsLoading(false);
     }

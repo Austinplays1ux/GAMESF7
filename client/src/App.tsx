@@ -12,11 +12,14 @@ import GamePlayer from "@/pages/GamePlayer";
 import AppHeader from "@/components/AppHeader";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { AuthProvider } from "@/hooks/use-auth";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 function Router() {
   const [location] = useLocation();
   const isLoginPage = location === "/" || 
                       location === "/login" || 
+                      location === "/signup" ||
                       location.startsWith("/auth");
 
   return (
@@ -27,11 +30,11 @@ function Router() {
           <Route path="/" component={Login} />
           <Route path="/login" component={Login} />
           <Route path="/auth/:mode?" component={Login} />
-          <Route path="/home" component={Home} />
-          <Route path="/discover" component={Discover} />
-          <Route path="/create" component={Create} />
-          <Route path="/games/:id" component={GameDetails} />
-          <Route path="/play/:id" component={GamePlayer} />
+          <ProtectedRoute path="/home" component={Home} />
+          <ProtectedRoute path="/discover" component={Discover} />
+          <ProtectedRoute path="/create" component={Create} />
+          <ProtectedRoute path="/games/:id" component={GameDetails} />
+          <ProtectedRoute path="/play/:id" component={GamePlayer} />
           <Route component={NotFound} />
         </Switch>
       </div>
@@ -44,8 +47,10 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark">
       <QueryClientProvider client={queryClient}>
-        <Router />
-        <Toaster />
+        <AuthProvider>
+          <Router />
+          <Toaster />
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );
