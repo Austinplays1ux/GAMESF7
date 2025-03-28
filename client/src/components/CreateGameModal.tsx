@@ -47,9 +47,15 @@ const createGameSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(100),
   description: z.string().min(10, "Description must be at least 10 characters").max(500),
   categoryIds: z.array(z.string()).min(1, "Select at least one category"),
-  thumbnailUrl: z.string().url("Please enter a valid URL for the thumbnail"),
-  gameUrl: z.string().url("Please enter a valid URL"),
+  thumbnailFile: z.instanceof(File).optional(),
+  thumbnailUrl: z.string().url("Please enter a valid URL for the thumbnail").optional(),
+  gameFile: z.instanceof(File).optional(),
+  gameUrl: z.string().url("Please enter a valid URL").optional(),
   htmlContent: z.string().optional(),
+}).refine(data => (data.thumbnailFile || data.thumbnailUrl), {
+  message: "Either thumbnail file or URL is required"
+}).refine(data => (data.gameFile || data.gameUrl), {
+  message: "Either game file or URL is required"
 });
 
 type CreateGameFormValues = z.infer<typeof createGameSchema>;
@@ -275,26 +281,53 @@ const CreateGameModal: React.FC<CreateGameModalProps> = ({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="thumbnailUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Thumbnail URL</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="https://example.com/image.jpg"
-                      className="bg-[#121212] border border-[#2A2A2A] rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-[#007AF4]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription className="text-xs text-gray-400">
-                    Enter the URL for your game's thumbnail image
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="thumbnailFile"
+                render={({ field: { onChange, ...field } }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Thumbnail Image</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        className="bg-[#121212] border border-[#2A2A2A] rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-[#007AF4]"
+                        onChange={(e) => onChange(e.target.files?.[0])}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs text-gray-400">
+                      Upload your game's thumbnail image
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="text-center text-gray-400">- OR -</div>
+
+              <FormField
+                control={form.control}
+                name="thumbnailUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Thumbnail URL</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://example.com/image.jpg"
+                        className="bg-[#121212] border border-[#2A2A2A] rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-[#007AF4]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs text-gray-400">
+                      Enter the URL for your game's thumbnail image
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}

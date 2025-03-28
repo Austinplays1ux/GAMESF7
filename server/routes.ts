@@ -94,7 +94,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/games", async (req: Request, res: Response) => {
     try {
-      const validatedData = insertGameSchema.parse(req.body);
+      const form = new FormData(req);
+      const gameFile = form.get('gameFile') as File;
+      const thumbnailFile = form.get('thumbnailFile') as File;
+      
+      // Handle file uploads using Object Storage
+      let gameUrl = form.get('gameUrl') as string;
+      let thumbnailUrl = form.get('thumbnailUrl') as string;
+      
+      if (gameFile) {
+        const gameObjectName = `games/${Date.now()}-${gameFile.name}`;
+        await storage.uploadFile(gameObjectName, await gameFile.arrayBuffer());
+        gameUrl = `/api/storage/${gameObjectName}`;
+      }
+      
+      if (thumbnailFile) {
+        const thumbObjectName = `thumbnails/${Date.now()}-${thumbnailFile.name}`;
+        await storage.uploadFile(thumbObjectName, await thumbnailFile.arrayBuffer());
+        thumbnailUrl = `/api/storage/${thumbObjectName}`;
+      }
+
+      const validatedData = insertGameSchema.parse({
+        ...req.body,
+        gameUrl,
+        thumbnailUrl
+      });
+      
       const newGame = await storage.createGame(validatedData);
       
       // Handle game tags if provided
