@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,8 +23,18 @@ type SignupFormData = {
 
 const Login: React.FC = () => {
   const [, navigate] = useLocation();
+  const [match, params] = useRoute('/auth/:mode?');
   const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
+  
+  // Set initial form state based on URL
+  useEffect(() => {
+    if (match && params && params.mode === 'signup') {
+      setIsLogin(false);
+    } else {
+      setIsLogin(true);
+    }
+  }, [match, params]);
   
   // Login form state
   const [loginForm, setLoginForm] = useState<LoginFormData>({

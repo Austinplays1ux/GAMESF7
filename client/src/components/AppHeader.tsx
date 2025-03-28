@@ -71,8 +71,8 @@ const AppHeader: React.FC = () => {
             </div>
           </div>
 
-          {/* User profile */}
-          <div className="flex items-center">
+          {/* Auth buttons / User profile */}
+          <div className="flex items-center space-x-4">
             {currentUser ? (
               <div className="relative">
                 <img
@@ -82,13 +82,22 @@ const AppHeader: React.FC = () => {
                 />
               </div>
             ) : (
-              <div className="h-8 w-8 bg-white rounded-full flex items-center justify-center cursor-pointer">
-                <i className="fas fa-user text-[#16082F]"></i>
+              <div className="hidden md:flex items-center space-x-2">
+                <Link href="/auth/login">
+                  <Button variant="outline" className="text-white border-white/20 hover:bg-purple-900/30">
+                    Log in
+                  </Button>
+                </Link>
+                <Link href="/auth/signup">
+                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                    Sign up
+                  </Button>
+                </Link>
               </div>
             )}
-
+            
             <button
-              className="md:hidden p-2 ml-4 text-white focus:outline-none"
+              className="md:hidden p-2 text-white focus:outline-none"
               onClick={toggleMobileMenu}
             >
               <i className="fas fa-bars"></i>
@@ -118,6 +127,21 @@ const AppHeader: React.FC = () => {
           <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-[#2A2A2A]">
             <i className="fas fa-coins mr-2"></i> Currency
           </div>
+          
+          {!currentUser && (
+            <>
+              <Link href="/auth/login">
+                <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-[#2A2A2A]">
+                  <i className="fas fa-sign-in-alt mr-2"></i> Log in
+                </div>
+              </Link>
+              <Link href="/auth/signup">
+                <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-purple-300 hover:bg-[#2A2A2A]">
+                  <i className="fas fa-user-plus mr-2"></i> Sign up
+                </div>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

@@ -15,7 +15,9 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 
 function Router() {
   const [location] = useLocation();
-  const isLoginPage = location === "/" || location === "/login";
+  const isLoginPage = location === "/" || 
+                      location === "/login" || 
+                      location.startsWith("/auth");
 
   return (
     <div className="flex flex-col min-h-screen bg-[#16082F] text-white sofia-pro">
@@ -24,6 +26,7 @@ function Router() {
         <Switch>
           <Route path="/" component={Login} />
           <Route path="/login" component={Login} />
+          <Route path="/auth/:mode?" component={Login} />
           <Route path="/home" component={Home} />
           <Route path="/discover" component={Discover} />
           <Route path="/create" component={Create} />

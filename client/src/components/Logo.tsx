@@ -16,11 +16,10 @@ const Logo: React.FC<LogoProps> = ({ size = "md" }) => {
   return (
     <div className="flex items-center">
       <img 
-        src="/images/gamesf7-logo.svg" 
+        src="/images/gamesf7-logo.png" 
         alt="GAMESF7 Logo" 
         width={width} 
         height={height}
-        className="gradient-text"
       />
     </div>
   );
