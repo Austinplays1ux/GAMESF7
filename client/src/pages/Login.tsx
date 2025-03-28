@@ -145,7 +145,7 @@ const Login: React.FC = () => {
             <p className="text-gray-400 mt-4">The ultimate gaming platform</p>
           </div>
           
-          <div className="bg-[#1a0d36] border border-[#2A2A2A] rounded-lg p-8">
+          <div className="backdrop-blur-md bg-purple-900/20 border border-white/10 rounded-lg p-8 shadow-xl">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold gradient-text">
                 {isLogin ? "Welcome back" : "Create an account"}
@@ -164,7 +164,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="username" 
                     type="text" 
-                    className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
+                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
                     placeholder="Enter your username"
                     value={loginForm.username}
                     onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
@@ -176,7 +176,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="password" 
                     type="password" 
-                    className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
+                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
                     placeholder="Enter your password"
                     value={loginForm.password}
                     onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
@@ -185,7 +185,7 @@ const Login: React.FC = () => {
                 
                 <Button 
                   type="submit"
-                  className="w-full gradient-bg text-white py-2"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2"
                   disabled={isLoading}
                 >
                   {isLoading ? "Logging in..." : "Log in"}
@@ -209,7 +209,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="signup-username" 
                     type="text" 
-                    className="bg-[#2A2A2A] border-[#3A3A3A] text-white"
+                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
                     placeholder="Choose a username"
                     value={signupForm.username}
                     onChange={(e) => setSignupForm({...signupForm, username: e.target.value})}
@@ -254,7 +254,7 @@ const Login: React.FC = () => {
                 
                 <Button 
                   type="submit"
-                  className="w-full gradient-bg text-white py-2"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2"
                   disabled={isLoading}
                 >
                   {isLoading ? "Creating account..." : "Sign up"}
