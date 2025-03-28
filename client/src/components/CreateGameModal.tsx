@@ -6,6 +6,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Platform, Category } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Dialog,
   DialogContent,
@@ -57,6 +58,7 @@ const CreateGameModal: React.FC<CreateGameModalProps> = ({
   onClose,
 }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedPlatform, setSelectedPlatform] = useState<string>("html");
   
   const { data: platforms = [] } = useQuery<Platform[]>({
@@ -82,11 +84,15 @@ const CreateGameModal: React.FC<CreateGameModalProps> = ({
 
   const createGameMutation = useMutation({
     mutationFn: async (data: CreateGameFormValues) => {
+      if (!user) {
+        throw new Error("You must be logged in to create a game");
+      }
+      
       const response = await apiRequest("POST", "/api/games", {
         ...data,
         platformId: parseInt(data.platformId),
         categoryIds: data.categoryIds.map(id => parseInt(id)),
-        creatorId: 1, // Assuming creator ID for now - this would come from auth
+        creatorId: user.id, // Using authenticated user's ID
       });
       return response.json();
     },
@@ -126,7 +132,7 @@ const CreateGameModal: React.FC<CreateGameModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-[#1E1E1E] text-white max-w-2xl max-h-[90vh] overflow-auto">
+      <DialogContent className="glass-card text-white max-w-2xl max-h-[90vh] overflow-auto backdrop-blur-xl bg-[#16082F]/70 border border-white/10">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold font-poppins mb-6">
             Create or Share Your Game
@@ -137,23 +143,23 @@ const CreateGameModal: React.FC<CreateGameModalProps> = ({
           <p className="block text-gray-300 text-sm font-medium mb-2">Game Platform</p>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <button
-              className={`flex flex-col items-center p-4 border-2 rounded-lg bg-[#121212] transition-colors ${
-                selectedPlatform === "html" ? "border-[#007AF4]" : "border-[#2A2A2A] hover:border-[#007AF4]"
+              className={`flex flex-col items-center p-4 border-2 rounded-lg glass-button transition-colors ${
+                selectedPlatform === "html" ? "border-purple-500" : "border-white/10 hover:border-purple-500/50"
               }`}
               onClick={() => handlePlatformSelect("html")}
               type="button"
             >
-              <i className="fab fa-html5 text-3xl mb-2 text-[#007AF4]"></i>
+              <i className="fab fa-html5 text-3xl mb-2 text-purple-400"></i>
               <span className="font-medium">Create HTML Game</span>
             </button>
             <button
-              className={`flex flex-col items-center p-4 border-2 rounded-lg bg-[#121212] transition-colors ${
-                selectedPlatform === "share" ? "border-[#007AF4]" : "border-[#2A2A2A] hover:border-[#007AF4]"
+              className={`flex flex-col items-center p-4 border-2 rounded-lg glass-button transition-colors ${
+                selectedPlatform === "share" ? "border-purple-500" : "border-white/10 hover:border-purple-500/50"
               }`}
               onClick={() => handlePlatformSelect("share")}
               type="button"
             >
-              <i className="fas fa-share-alt text-3xl mb-2 text-gray-400"></i>
+              <i className="fas fa-share-alt text-3xl mb-2 text-pink-400"></i>
               <span className="font-medium">Share Existing Game</span>
             </button>
           </div>
