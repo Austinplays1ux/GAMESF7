@@ -64,16 +64,33 @@ const Login: React.FC = () => {
       return;
     }
     
-    // For demo purposes, just navigate to home
     setIsLoading(true);
-    setTimeout(() => {
+    
+    try {
+      const response = await apiRequest("POST", "/api/login", loginForm);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+      
+      const userData = await response.json();
+      
       toast({
         title: "Login successful!",
-        description: "Welcome back to GAMESF7",
+        description: `Welcome back, ${userData.username}!`,
       });
+      
       navigate("/home");
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "Invalid username or password",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
@@ -113,29 +130,30 @@ const Login: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Here you would send the data to your API
-      // In a real app, you would call your API with:
-      // const { confirmPassword, ...userData } = signupForm;
-      // await apiRequest("/api/users", {
-      //   method: "POST",
-      //   body: JSON.stringify(userData),
-      // });
+      const { confirmPassword, ...userData } = signupForm;
       
-      // For demo purposes, just navigate to home
-      setTimeout(() => {
-        toast({
-          title: "Account created!",
-          description: "Your account has been created successfully.",
-        });
-        navigate("/home");
-        setIsLoading(false);
-      }, 1000);
+      const response = await apiRequest("POST", "/api/users", userData);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create account");
+      }
+      
+      const newUser = await response.json();
+      
+      toast({
+        title: "Account created!",
+        description: `Welcome to GAMESF7, ${newUser.username}!`,
+      });
+      
+      navigate("/home");
     } catch (error) {
       toast({
         title: "Signup failed",
-        description: "There was an error creating your account.",
+        description: error instanceof Error ? error.message : "There was an error creating your account",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -155,7 +173,7 @@ const Login: React.FC = () => {
             <p className="text-gray-400 mt-4">The ultimate gaming platform</p>
           </div>
           
-          <div className="backdrop-blur-md bg-purple-900/20 border border-white/10 rounded-lg p-8 shadow-xl">
+          <div className="glass-modal rounded-lg p-8 shadow-xl">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold gradient-text">
                 {isLogin ? "Welcome back" : "Create an account"}
@@ -174,7 +192,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="username" 
                     type="text" 
-                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
+                    className="glass-input"
                     placeholder="Enter your username"
                     value={loginForm.username}
                     onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
@@ -186,7 +204,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="password" 
                     type="password" 
-                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
+                    className="glass-input"
                     placeholder="Enter your password"
                     value={loginForm.password}
                     onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
@@ -195,7 +213,7 @@ const Login: React.FC = () => {
                 
                 <Button 
                   type="submit"
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2"
+                  className="w-full glass-button text-white py-2"
                   disabled={isLoading}
                 >
                   {isLoading ? "Logging in..." : "Log in"}
@@ -219,7 +237,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="signup-username" 
                     type="text" 
-                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
+                    className="glass-input"
                     placeholder="Choose a username"
                     value={signupForm.username}
                     onChange={(e) => setSignupForm({...signupForm, username: e.target.value})}
@@ -231,7 +249,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="signup-email" 
                     type="email" 
-                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
+                    className="glass-input"
                     placeholder="Enter your email"
                     value={signupForm.email}
                     onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
@@ -243,7 +261,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="signup-password" 
                     type="password" 
-                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
+                    className="glass-input"
                     placeholder="Create a password"
                     value={signupForm.password}
                     onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
@@ -255,7 +273,7 @@ const Login: React.FC = () => {
                   <Input 
                     id="signup-confirm" 
                     type="password" 
-                    className="bg-purple-900/30 backdrop-blur-sm border-white/20 text-white focus:border-purple-500/50 transition-all"
+                    className="glass-input"
                     placeholder="Confirm your password"
                     value={signupForm.confirmPassword}
                     onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
@@ -264,7 +282,7 @@ const Login: React.FC = () => {
                 
                 <Button 
                   type="submit"
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2"
+                  className="w-full glass-button text-white py-2"
                   disabled={isLoading}
                 >
                   {isLoading ? "Creating account..." : "Sign up"}

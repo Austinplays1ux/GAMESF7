@@ -19,7 +19,8 @@ const Logo: React.FC<LogoProps> = ({ size = "md" }) => {
         src="/images/gamesf7-logo.png" 
         alt="GAMESF7 Logo" 
         width={width} 
-        height={height}
+        height={height} 
+        className="object-contain"
       />
     </div>
   );

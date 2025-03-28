@@ -22,7 +22,7 @@ const AppHeader: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#16082F] border-b border-[#2A2A2A]">
+    <header className="sticky top-0 z-50 glass-navbar">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -63,7 +63,7 @@ const AppHeader: React.FC = () => {
               <Input 
                 type="text"
                 placeholder="Search..." 
-                className="bg-[#2A2A2A] border-none text-white h-9 pl-10 pr-4 rounded-full focus:ring-2 focus:ring-purple-500 focus:outline-none w-44 sofia-pro"
+                className="glass-input text-white h-9 pl-10 pr-4 rounded-full focus:ring-2 focus:ring-purple-500 focus:outline-none w-44 sofia-pro"
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                 <i className="fas fa-search"></i>
@@ -84,12 +84,12 @@ const AppHeader: React.FC = () => {
             ) : (
               <div className="hidden md:flex items-center space-x-2">
                 <Link href="/auth/login">
-                  <Button variant="outline" className="text-white border-white/20 hover:bg-purple-900/30">
+                  <Button variant="outline" className="glass-button text-white border-white/10">
                     Log in
                   </Button>
                 </Link>
                 <Link href="/auth/signup">
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                  <Button className="glass-button bg-purple-600/60 hover:bg-purple-600/80 text-white">
                     Sign up
                   </Button>
                 </Link>
@@ -108,35 +108,35 @@ const AppHeader: React.FC = () => {
 
       {/* Mobile Menu */}
       <div className={`md:hidden ${mobileMenuOpen ? '' : 'hidden'}`} id="mobile-menu">
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#16082F]">
+        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 glass-dark">
           <Link href="/home">
-            <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-[#2A2A2A]">
+            <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
               <i className="fas fa-home mr-2"></i> Home
             </div>
           </Link>
           <Link href="/discover">
-            <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-[#2A2A2A]">
+            <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
               <i className="fas fa-compass mr-2"></i> Explore
             </div>
           </Link>
           <Link href="/create">
-            <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-[#2A2A2A]">
+            <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
               <i className="fas fa-plus-circle mr-2"></i> Create
             </div>
           </Link>
-          <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-[#2A2A2A]">
+          <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
             <i className="fas fa-coins mr-2"></i> Currency
           </div>
           
           {!currentUser && (
             <>
               <Link href="/auth/login">
-                <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-[#2A2A2A]">
+                <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
                   <i className="fas fa-sign-in-alt mr-2"></i> Log in
                 </div>
               </Link>
               <Link href="/auth/signup">
-                <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-purple-300 hover:bg-[#2A2A2A]">
+                <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro gradient-text hover:bg-purple-900/30 glass-button">
                   <i className="fas fa-user-plus mr-2"></i> Sign up
                 </div>
               </Link>

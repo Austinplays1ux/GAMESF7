@@ -8,6 +8,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   // API routes
+  
+  // Auth routes
+  app.post("/api/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      
+      // Get user from storage
+      const user = await storage.getUserByUsername(username);
+      
+      // Check if user exists and password matches
+      if (!user || user.password !== password) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+      
+      // Return user data (excluding password)
+      const { password: _, ...userData } = user;
+      res.status(200).json(userData);
+    } catch (error) {
+      res.status(500).json({ message: "Login failed", error: String(error) });
+    }
+  });
   app.get("/api/platforms", async (_req: Request, res: Response) => {
     try {
       const platforms = await storage.getPlatforms();
