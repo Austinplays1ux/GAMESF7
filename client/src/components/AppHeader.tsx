@@ -29,7 +29,7 @@ const AppHeader: React.FC = () => {
           <div className="flex items-center">
             <Link href="/home">
               <div className="flex items-center">
-                <Logo size="md" />
+                <Logo size="sm" />
                 <span className="ml-2 text-xs text-gray-400">Alpha</span>
               </div>
             </Link>
