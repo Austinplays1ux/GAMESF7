@@ -18,7 +18,7 @@ function Router() {
   const isLoginPage = location === "/" || location === "/login";
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#16082F] text-white font-inter">
+    <div className="flex flex-col min-h-screen bg-[#16082F] text-white sofia-pro">
       {!isLoginPage && <AppHeader />}
       <div className="flex-grow">
         <Switch>

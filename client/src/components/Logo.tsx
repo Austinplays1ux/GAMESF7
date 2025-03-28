@@ -34,7 +34,7 @@ const Logo: React.FC<LogoProps> = ({ size = "md" }) => {
         />
         <line className="cls-2" x1="0.75" y1="16.75" x2="0.75" y2="0.75" />
       </svg>
-      <span className={`${fontSize} font-poppins font-bold tracking-wide`}>
+      <span className={`${fontSize} roblox-font font-bold tracking-wide gradient-text`}>
         GAMESF7
       </span>
     </div>
