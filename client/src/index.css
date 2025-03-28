@@ -62,15 +62,15 @@
   --primary-hover: #7929E9;
   --secondary-color: #FF3399;
   --secondary-hover: #E92982;
-  --background-dark: #16082F;
-  --background-darker: #0D041F;
+  --background-dark: #0A0418;
+  --background-darker: #060210;
   --text-primary: #FFFFFF;
   --text-secondary: #BBBBBB;
 }
 
 body {
   font-family: 'Sofia Pro Soft', 'Poppins', 'Inter', sans-serif;
-  background-color: var(--background-dark);
+  background-color: var(--background-darker);
   color: var(--text-primary);
 }
 
