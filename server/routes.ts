@@ -160,7 +160,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/users", async (req: Request, res: Response) => {
+  app.get("/api/users/:id", async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const user = await storage.getUser(id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Don't send password in response
+    const { password: _, ...userData } = user;
+    res.json(userData);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch user" });
+  }
+});
+
+app.patch("/api/users/:id", async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const { username, email, avatarUrl, bio } = req.body;
+    
+    const updatedUser = await storage.updateUser(id, {
+      username,
+      email,
+      avatarUrl,
+      bio
+    });
+    
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Don't send password in response
+    const { password: _, ...userData } = updatedUser;
+    res.json(userData);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update user" });
+  }
+});
+
+app.post("/api/users", async (req: Request, res: Response) => {
     try {
       const validatedData = insertUserSchema.parse(req.body);
       
