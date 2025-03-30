@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { GameDetailModal } from '@/components/GameDetailModal';
-import { GamePlayModal } from '@/components/GamePlayModal';
+import GameDetailModal from '@/components/GameDetailModal';
+import GamePlayModal from '@/components/GamePlayModal';
 import type { Platform, GameWithDetails } from '@/types';
 
 const Discover: React.FC = () => {
