@@ -131,14 +131,11 @@ const Login: React.FC = () => {
 
   return (
     <div 
-      className="min-h-screen flex flex-col md:flex-row relative overflow-hidden"
+      className="min-h-screen flex flex-col md:flex-row"
       style={{
-        background: "linear-gradient(135deg, #0c041c 0%, #1a0b2e 100%)",
+        background: "#0c041c",
       }}
     >
-      {/* Glassmorphic background elements */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-purple-600/20 blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-pink-600/20 blur-[100px] pointer-events-none"></div>
       {/* Left panel with form */}
       <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-8">
         <div className="w-full max-w-md">
@@ -147,7 +144,7 @@ const Login: React.FC = () => {
             <p className="text-gray-400 mt-4">The ultimate gaming platform</p>
           </div>
           
-          <div className="glass-modal rounded-lg p-8 shadow-xl border border-white/10 backdrop-blur-xl bg-white/5">
+          <div className="glass-modal rounded-lg p-8 shadow-xl">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold gradient-text">
                 {isLogin ? "Welcome back" : "Create an account"}
