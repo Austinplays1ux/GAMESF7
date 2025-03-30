@@ -1,29 +1,17 @@
-import React from "react";
+import React from 'react';
 
-interface LogoProps {
-  size?: "sm" | "md" | "lg";
-}
-
-const Logo: React.FC<LogoProps> = ({ size = "md" }) => {
-  const dimensions = {
-    sm: { width: 120, height: 30 },
-    md: { width: 160, height: 40 },
-    lg: { width: 200, height: 50 },
+export const Logo: React.FC<{ size?: 'sm' | 'md' | 'lg' | 'xl', className?: string }> = ({ size = 'md', className = '' }) => {
+  const sizeClasses = {
+    sm: 'text-xl',
+    md: 'text-2xl',
+    lg: 'text-3xl',
+    xl: 'text-4xl'
   };
 
-  const { width, height } = dimensions[size];
-
   return (
-    <div className="flex items-center">
-      <img 
-        src="/images/gamesf7-logo.png" 
-        alt="GAMESF7 Logo" 
-        width={width} 
-        height={height} 
-        className="object-contain"
-      />
+    <div className={`font-bold ${sizeClasses[size]} ${className}`}>
+      <span className="text-purple-500">GAMES</span>
+      <span className="text-pink-500">F7</span>
     </div>
   );
 };
-
-export default Logo;
