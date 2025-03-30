@@ -116,14 +116,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
       }
 
-      const validatedData = insertGameSchema.parse({
-        ...req.body,
-        gameUrl,
-        thumbnailUrl
-      });
-      
-      const newGame = await storage.createGame(validatedData);
-      
       // Handle game tags if provided
       if (req.body.categoryIds && Array.isArray(req.body.categoryIds)) {
         const tagPromises = req.body.categoryIds.map((categoryId: number) => {
