@@ -108,7 +108,7 @@ const Home: React.FC = () => {
             <Button 
               variant="link" 
               className="text-purple-400 hover:text-purple-300"
-              onClick={() => navigate("/discover")}
+              onClick={() => navigate("/explore")}
             >
               View All <i className="fas fa-chevron-right ml-1"></i>
             </Button>
@@ -176,7 +176,7 @@ const Home: React.FC = () => {
             <Button 
               variant="link" 
               className="text-purple-400 hover:text-purple-300"
-              onClick={() => navigate("/discover")}
+              onClick={() => navigate("/explore")}
             >
               View All <i className="fas fa-chevron-right ml-1"></i>
             </Button>
