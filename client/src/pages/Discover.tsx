@@ -79,7 +79,7 @@ const Discover: React.FC = () => {
       : games.filter(game => game.platformId.toString() === activeCategory);
 
   // Get unique platform IDs from games for creating sections
-  const uniquePlatforms = Array.from(new Set(games.map(game => game.platform.id)));
+  const uniquePlatforms = Array.from(new Set(games.filter(game => game.platform).map(game => game.platform.id)));
 
   return (
     <div 
