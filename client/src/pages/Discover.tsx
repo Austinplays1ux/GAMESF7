@@ -11,7 +11,7 @@ const Discover: React.FC = () => {
   const [location] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
   const platformParam = searchParams.get("platform");
-  
+
   const [activeCategory, setActiveCategory] = useState(platformParam || "all");
   const [selectedGame, setSelectedGame] = useState<GameWithDetails | null>(null);
   const [isGameDetailOpen, setIsGameDetailOpen] = useState(false);
@@ -42,13 +42,13 @@ const Discover: React.FC = () => {
 
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
-    
+
     // Update URL to reflect current filter
     const params = new URLSearchParams();
     if (category !== "all" && category !== "featured") {
       params.set("platform", category);
     }
-    
+
     const newUrl = `/discover${params.toString() ? `?${params.toString()}` : ""}`;
     window.history.pushState({}, "", newUrl);
   };
@@ -78,8 +78,12 @@ const Discover: React.FC = () => {
       ? games.filter(game => game.isFeatured) 
       : games.filter(game => game.platformId.toString() === activeCategory);
 
-  // Get unique platform IDs from games for creating sections
-  const uniquePlatforms = Array.from(new Set(games.filter(game => game.platform).map(game => game.platform.id)));
+  // Get unique platform IDs from games for creating sections, filtering out games without platforms
+  const uniquePlatforms = Array.from(new Set(
+    games
+      .filter(game => game.platform && typeof game.platform === 'object')
+      .map(game => game.platform.id)
+  ));
 
   return (
     <div 
@@ -113,7 +117,7 @@ const Discover: React.FC = () => {
           >
             All Games
           </Button>
-          
+
           <Button
             onClick={() => handleCategoryChange("featured")}
             className={`glass-button px-6 py-2.5 rounded-full ${
@@ -122,7 +126,7 @@ const Discover: React.FC = () => {
           >
             <i className="fas fa-star mr-2 text-yellow-400"></i> Featured
           </Button>
-          
+
           {platforms.map((platform) => (
             <Button
               key={platform.id}
@@ -224,17 +228,17 @@ const Discover: React.FC = () => {
         {/* Platform sections (only on "all" view) */}
         {activeCategory === "all" && uniquePlatforms.map(platformId => {
           const platform = platforms.find(p => p.id === platformId);
-          const platformGames = games.filter(game => game.platform.id === platformId);
-          
+          const platformGames = games.filter(game => game.platform && game.platform.id === platformId);
+
           if (!platform || platformGames.length === 0) return null;
-          
+
           return (
             <div key={platformId} className="glass-panel p-6 rounded-xl mb-8">
               <div className="flex items-center mb-6">
                 <i className={`${platform.icon} mr-3 text-2xl`} style={{ color: platform.color }}></i>
                 <h2 className="text-2xl font-bold gradient-text">{platform.name} Games</h2>
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {platformGames.slice(0, 4).map((game) => (
                   <div 
@@ -271,7 +275,7 @@ const Discover: React.FC = () => {
                   </div>
                 ))}
               </div>
-              
+
               {platformGames.length > 4 && (
                 <div className="text-center mt-6">
                   <Button 
@@ -296,7 +300,7 @@ const Discover: React.FC = () => {
             onClose={handleCloseGameDetail}
             onPlay={handlePlayGame}
           />
-          
+
           <GamePlayModal
             game={selectedGame}
             isOpen={isGamePlayOpen}
