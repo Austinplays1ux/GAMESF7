@@ -1,3 +1,4 @@
+
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -8,31 +9,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   // API routes
-  
-  // Auth routes
-  app.post("/api/login", async (req: Request, res: Response) => {
+  app.post("/api/games", async (req: Request, res: Response) => {
     try {
-      const { username, password } = req.body;
+      const { title, description, platformId, creatorId, gameUrl, htmlContent, categoryIds } = req.body;
       
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
+      // Create the game
+      const newGame = await storage.createGame({
+        title,
+        description,
+        platformId,
+        creatorId,
+        gameUrl,
+        htmlContent,
+        thumbnailUrl: req.body.thumbnailUrl || `https://placehold.co/400x225/8833FF/FFFFFF?text=${encodeURIComponent(title)}`,
+      });
+      
+      // Handle game tags if provided
+      if (categoryIds && Array.isArray(categoryIds)) {
+        const tagPromises = categoryIds.map((categoryId: number) => {
+          const gameTag = insertGameTagSchema.parse({
+            gameId: newGame.id,
+            categoryId
+          });
+          return storage.addGameTag(gameTag);
+        });
+        
+        await Promise.all(tagPromises);
       }
       
-      // Get user from storage
-      const user = await storage.getUserByUsername(username);
-      
-      // Check if user exists and password matches
-      if (!user || user.password !== password) {
-        return res.status(401).json({ message: "Invalid username or password" });
-      }
-      
-      // Return user data (excluding password)
-      const { password: _, ...userData } = user;
-      res.status(200).json(userData);
+      res.status(201).json(newGame);
     } catch (error) {
-      res.status(500).json({ message: "Login failed", error: String(error) });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid game data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create game" });
     }
   });
+
   app.get("/api/platforms", async (_req: Request, res: Response) => {
     try {
       const platforms = await storage.getPlatforms();
@@ -92,52 +105,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/games", async (req: Request, res: Response) => {
-    try {
-      const { title, description, platformId, creatorId, gameUrl, htmlContent, categoryIds } = req.body;
-      
-      // Create the game
-      const newGame = await storage.createGame({
-        title,
-        description,
-        platformId,
-        creatorId,
-        gameUrl,
-        htmlContent,
-        thumbnailUrl: req.body.thumbnailUrl || `https://placehold.co/400x225/8833FF/FFFFFF?text=${encodeURIComponent(title)}`,
-      });
-      
-      // Add categories if provided
-      if (categoryIds && Array.isArray(categoryIds)) {
-        await Promise.all(
-          categoryIds.map(categoryId =>
-            storage.addGameTag({ gameId: newGame.id, categoryId })
-          )
-        );
-      }
-
-      // Handle game tags if provided
-      if (req.body.categoryIds && Array.isArray(req.body.categoryIds)) {
-        const tagPromises = req.body.categoryIds.map((categoryId: number) => {
-          const gameTag = insertGameTagSchema.parse({
-            gameId: newGame.id,
-            categoryId
-          });
-          return storage.addGameTag(gameTag);
-        });
-        
-        await Promise.all(tagPromises);
-      }
-      
-      res.status(201).json(newGame);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid game data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create game" });
-    }
-  });
-
   app.post("/api/games/:id/play", async (req: Request, res: Response) => {
     try {
       const id = Number(req.params.id);
@@ -155,47 +122,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/users/:id", async (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
-    const user = await storage.getUser(id);
-    
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    try {
+      const id = Number(req.params.id);
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Don't send password in response
+      const { password: _, ...userData } = user;
+      res.json(userData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user" });
     }
-    
-    // Don't send password in response
-    const { password: _, ...userData } = user;
-    res.json(userData);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch user" });
-  }
-});
+  });
 
-app.patch("/api/users/:id", async (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
-    const { username, email, avatarUrl, bio } = req.body;
-    
-    const updatedUser = await storage.updateUser(id, {
-      username,
-      email,
-      avatarUrl,
-      bio
-    });
-    
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+  app.post("/api/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      
+      // Get user from storage
+      const user = await storage.getUserByUsername(username);
+      
+      // Check if user exists and password matches
+      if (!user || user.password !== password) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+      
+      // Return user data (excluding password)
+      const { password: _, ...userData } = user;
+      res.status(200).json(userData);
+    } catch (error) {
+      res.status(500).json({ message: "Login failed", error: String(error) });
     }
-    
-    // Don't send password in response
-    const { password: _, ...userData } = updatedUser;
-    res.json(userData);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to update user" });
-  }
-});
+  });
 
-app.post("/api/users", async (req: Request, res: Response) => {
+  app.patch("/api/users/:id", async (req: Request, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const { username, email, avatarUrl, bio } = req.body;
+      
+      const updatedUser = await storage.updateUser(id, {
+        username,
+        email,
+        avatarUrl,
+        bio
+      });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Don't send password in response
+      const { password: _, ...userData } = updatedUser;
+      res.json(userData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  app.post("/api/users", async (req: Request, res: Response) => {
     try {
       const validatedData = insertUserSchema.parse(req.body);
       
