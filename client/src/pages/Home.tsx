@@ -263,7 +263,7 @@ const Home: React.FC = () => {
 
           <div className="bg-gradient-to-r from-green-900 to-green-700 rounded-lg p-6 transform transition-transform hover:scale-105">
             <div className="mb-4 text-3xl">
-              <i className="fas fa-basketball-ball"></i>
+              <img src="/images/recroom-logo.png" alt="RecRoom" className="w-12 h-12" />
             </div>
             <h3 className="text-xl font-bold mb-2">RecRoom Games</h3>
             <p className="text-gray-200 mb-4">The best RecRoom game modes and experiences.</p>
