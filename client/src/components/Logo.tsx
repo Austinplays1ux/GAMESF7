@@ -1,17 +1,13 @@
+
 import React from 'react';
 
-export const Logo: React.FC<{ size?: 'sm' | 'md' | 'lg' | 'xl', className?: string }> = ({ size = 'md', className = '' }) => {
-  const sizeClasses = {
-    sm: 'text-xl',
-    md: 'text-2xl',
-    lg: 'text-3xl',
-    xl: 'text-4xl'
-  };
-
+const Logo: React.FC = () => {
   return (
-    <div className={`font-bold ${sizeClasses[size]} ${className}`}>
-      <span className="text-purple-500">GAMES</span>
-      <span className="text-pink-500">F7</span>
+    <div className="flex items-center gap-2">
+      <img src="/images/logo.png" alt="Logo" className="w-8 h-8" />
+      <span className="font-bold text-xl">GameShare</span>
     </div>
   );
 };
+
+export default Logo;
