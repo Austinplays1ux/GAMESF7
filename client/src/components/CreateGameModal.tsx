@@ -162,6 +162,7 @@ const CreateGameModal: React.FC<CreateGameModalProps> = ({
             >
               <i className="fab fa-html5 text-3xl mb-2 text-purple-400"></i>
               <span className="font-medium">Create HTML Game</span>
+              <p className="text-xs text-gray-400 mt-2">Upload and host your HTML game</p>
             </button>
             <button
               className={`flex flex-col items-center p-4 border-2 rounded-lg glass-button transition-colors ${
@@ -172,6 +173,7 @@ const CreateGameModal: React.FC<CreateGameModalProps> = ({
             >
               <i className="fas fa-share-alt text-3xl mb-2 text-pink-400"></i>
               <span className="font-medium">Share Existing Game</span>
+              <p className="text-xs text-gray-400 mt-2">Share games from other platforms</p>
             </button>
           </div>
         </div>

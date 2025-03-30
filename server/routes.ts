@@ -94,24 +94,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/games", async (req: Request, res: Response) => {
     try {
-      const form = new FormData(req);
-      const gameFile = form.get('gameFile') as File;
-      const thumbnailFile = form.get('thumbnailFile') as File;
+      const { title, description, platformId, creatorId, gameUrl, htmlContent, categoryIds } = req.body;
       
-      // Handle file uploads using Object Storage
-      let gameUrl = form.get('gameUrl') as string;
-      let thumbnailUrl = form.get('thumbnailUrl') as string;
+      // Create the game
+      const newGame = await storage.createGame({
+        title,
+        description,
+        platformId,
+        creatorId,
+        gameUrl,
+        htmlContent,
+        thumbnailUrl: req.body.thumbnailUrl || `https://placehold.co/400x225/8833FF/FFFFFF?text=${encodeURIComponent(title)}`,
+      });
       
-      if (gameFile) {
-        const gameObjectName = `games/${Date.now()}-${gameFile.name}`;
-        await storage.uploadFile(gameObjectName, await gameFile.arrayBuffer());
-        gameUrl = `/api/storage/${gameObjectName}`;
-      }
-      
-      if (thumbnailFile) {
-        const thumbObjectName = `thumbnails/${Date.now()}-${thumbnailFile.name}`;
-        await storage.uploadFile(thumbObjectName, await thumbnailFile.arrayBuffer());
-        thumbnailUrl = `/api/storage/${thumbObjectName}`;
+      // Add categories if provided
+      if (categoryIds && Array.isArray(categoryIds)) {
+        await Promise.all(
+          categoryIds.map(categoryId =>
+            storage.addGameTag({ gameId: newGame.id, categoryId })
+          )
+        );
       }
 
       const validatedData = insertGameSchema.parse({
