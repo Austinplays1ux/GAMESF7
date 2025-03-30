@@ -113,7 +113,7 @@ const Home: React.FC = () => {
               View All <i className="fas fa-chevron-right ml-1"></i>
             </Button>
           </div>
-          
+
           {isLoadingFeatured ? (
             <div className="flex flex-wrap gap-4">
               {Array(4).fill(0).map((_, i) => (
@@ -181,7 +181,7 @@ const Home: React.FC = () => {
               View All <i className="fas fa-chevron-right ml-1"></i>
             </Button>
           </div>
-          
+
           {isLoadingAll ? (
             <div className="flex flex-wrap gap-4">
               {Array(4).fill(0).map((_, i) => (
@@ -249,7 +249,7 @@ const Home: React.FC = () => {
               Explore HTML Games
             </Button>
           </div>
-          
+
           <div className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-lg p-6 transform transition-transform hover:scale-105">
             <div className="mb-4">
               <img src="/images/platforms/roblox-icon.webp" alt="Roblox" className="w-12 h-12" />
@@ -260,7 +260,7 @@ const Home: React.FC = () => {
               Explore Roblox Games
             </Button>
           </div>
-          
+
           <div className="bg-gradient-to-r from-green-900 to-green-700 rounded-lg p-6 transform transition-transform hover:scale-105">
             <div className="mb-4 text-3xl">
               <i className="fas fa-basketball-ball"></i>
@@ -271,7 +271,7 @@ const Home: React.FC = () => {
               Explore RecRoom Games
             </Button>
           </div>
-          
+
           <div className="bg-gradient-to-r from-pink-900 to-pink-700 rounded-lg p-6 transform transition-transform hover:scale-105">
             <div className="mb-4 text-3xl">
               <i className="fas fa-cubes"></i>
@@ -294,7 +294,7 @@ const Home: React.FC = () => {
             onClose={handleCloseGameDetail}
             onPlay={handlePlayGame}
           />
-          
+
           <GamePlayModal
             game={selectedGame}
             isOpen={isGamePlayOpen}
