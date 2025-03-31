@@ -81,7 +81,7 @@ const Create: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold font-montserrat mb-2">Puzzle</h3>
               <p className="text-gray-400 text-sm mb-4">Challenge the mind with logical puzzles</p>
-              <Button variant="outline" className="glass-button text-[#6C2FF2] font-bold border-[#6C2FF2]" onClick={handleOpenCreateModal}>
+              <Button variant="outline" className="glass-button text-[#6C2FF2] font-extrabold border-[#6C2FF2] opacity-90" onClick={handleOpenCreateModal}>
                 Use Template
               </Button>
             </div>
