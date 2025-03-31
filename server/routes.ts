@@ -154,8 +154,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid username or password" });
       }
       
-      // Return user data (excluding password)
-      const { password: _, ...userData } = user;
+      // Check if user is crystalgamer77 and add admin privileges
+      const userData = {
+        ...user,
+        isAdmin: user.username === 'crystalgamer77',
+        isOwner: user.username === 'crystalgamer77',
+      };
+      delete userData.password;
       res.status(200).json(userData);
     } catch (error) {
       res.status(500).json({ message: "Login failed", error: String(error) });

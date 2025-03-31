@@ -74,7 +74,10 @@ export const insertGameTagSchema = createInsertSchema(gameTags).omit({
 });
 
 // Types
-export type User = typeof users.$inferSelect;
+export type User = typeof users.$inferSelect & {
+  isAdmin?: boolean;
+  isOwner?: boolean;
+};
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type Platform = typeof platforms.$inferSelect;
