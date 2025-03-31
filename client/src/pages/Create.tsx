@@ -4,6 +4,8 @@ import { Platform } from "@/types";
 import { Button } from "@/components/ui/button";
 import CreateGameModal from "@/components/CreateGameModal";
 
+import CreateGameModal from '../components/CreateGameModal';
+
 const Create: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 

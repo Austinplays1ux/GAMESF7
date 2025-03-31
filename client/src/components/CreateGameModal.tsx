@@ -401,3 +401,167 @@ const CreateGameModal: React.FC<CreateGameModalProps> = ({
 };
 
 export default CreateGameModal;
+import React, { useState } from 'react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { Platform, Category } from '../types';
+
+interface CreateGameModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const CreateGameModal: React.FC<CreateGameModalProps> = ({ isOpen, onClose }) => {
+  const queryClient = useQueryClient();
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    platformId: '',
+    gameUrl: '',
+    htmlContent: '',
+    categoryIds: [] as number[],
+  });
+
+  const { data: platforms = [] } = useQuery<Platform[]>({
+    queryKey: ['/api/platforms'],
+  });
+
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+  });
+
+  const createGameMutation = useMutation({
+    mutationFn: async (gameData: any) => {
+      const response = await fetch('/api/games', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(gameData),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create game');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/games'] });
+      onClose();
+      setFormData({
+        title: '',
+        description: '',
+        platformId: '',
+        gameUrl: '',
+        htmlContent: '',
+        categoryIds: [],
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createGameMutation.mutate({
+      ...formData,
+      platformId: Number(formData.platformId),
+      creatorId: 1, // This should come from auth context in a real app
+    });
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-[#1E1E1E] rounded-xl p-6 w-full max-w-2xl">
+        <h2 className="text-2xl font-bold mb-4">Create New Game</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-1">Title</label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full p-2 rounded bg-[#2E2E2E] border border-gray-600"
+                required
+              />
+            </div>
+            <div>
+              <label className="block mb-1">Description</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full p-2 rounded bg-[#2E2E2E] border border-gray-600"
+                rows={3}
+                required
+              />
+            </div>
+            <div>
+              <label className="block mb-1">Platform</label>
+              <select
+                value={formData.platformId}
+                onChange={(e) => setFormData({ ...formData, platformId: e.target.value })}
+                className="w-full p-2 rounded bg-[#2E2E2E] border border-gray-600"
+                required
+              >
+                <option value="">Select Platform</option>
+                {platforms.map((platform) => (
+                  <option key={platform.id} value={platform.id}>
+                    {platform.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block mb-1">Game URL</label>
+              <input
+                type="url"
+                value={formData.gameUrl}
+                onChange={(e) => setFormData({ ...formData, gameUrl: e.target.value })}
+                className="w-full p-2 rounded bg-[#2E2E2E] border border-gray-600"
+                required
+              />
+            </div>
+            <div>
+              <label className="block mb-1">Categories</label>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <label key={category.id} className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.categoryIds.includes(category.id)}
+                      onChange={(e) => {
+                        const newCategoryIds = e.target.checked
+                          ? [...formData.categoryIds, category.id]
+                          : formData.categoryIds.filter((id) => id !== category.id);
+                        setFormData({ ...formData, categoryIds: newCategoryIds });
+                      }}
+                      className="mr-1"
+                    />
+                    {category.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded bg-[#FF5722] hover:bg-opacity-90"
+              disabled={createGameMutation.isPending}
+            >
+              {createGameMutation.isPending ? 'Creating...' : 'Create Game'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default CreateGameModal;
