@@ -14,6 +14,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, userData: Partial<User>): Promise<User | undefined>;
   
   // Platforms
   getPlatforms(): Promise<Platform[]>;
@@ -32,6 +33,7 @@ export interface IStorage {
   getGameByTitle(title: string): Promise<Game | undefined>;
   createGame(game: InsertGame): Promise<Game>;
   getFeaturedGames(): Promise<Game[]>;
+  getRecommendedGames(): Promise<Game[]>;
   getGamesByPlatform(platformId: number): Promise<Game[]>;
   getGameDetails(gameId: number): Promise<GameWithDetails | undefined>;
   incrementGamePlays(gameId: number): Promise<void>;

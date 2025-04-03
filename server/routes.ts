@@ -89,6 +89,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch featured games" });
     }
   });
+  
+  app.get("/api/games/recommended", async (_req: Request, res: Response) => {
+    try {
+      const recommendedGames = await storage.getRecommendedGames();
+      res.json(recommendedGames);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch recommended games" });
+    }
+  });
 
   app.get("/api/games/:id", async (req: Request, res: Response) => {
     try {
