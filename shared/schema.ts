@@ -34,7 +34,7 @@ export const games = pgTable("games", {
   thumbnailUrl: text("thumbnail_url").notNull(),
   platformId: integer("platform_id").notNull(),
   creatorId: integer("creator_id").notNull(),
-  gameUrl: text("game_url").notNull(),
+  gameUrl: text("game_url"),  // Made optional to allow HTML-only games
   htmlContent: text("html_content"),
   isFeatured: boolean("is_featured").default(false).notNull(),
   plays: integer("plays").default(0).notNull(),

@@ -25,8 +25,23 @@ const createGameSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(100),
   description: z.string().min(10, "Description must be at least 10 characters").max(500),
   categoryIds: z.array(z.string()).min(1, "Select at least one category"),
-  gameUrl: z.string().url("Please enter a valid URL"),
+  gameType: z.enum(["url", "html"], { 
+    required_error: "Please select a game type" 
+  }),
+  gameUrl: z.string().url("Please enter a valid URL").optional().or(z.literal('')),
+  htmlContent: z.string().optional().or(z.literal('')),
   thumbnailUrl: z.string().url("Please enter a valid thumbnail URL"),
+}).refine((data) => {
+  // Ensure that based on gameType, the corresponding field has a value
+  if (data.gameType === "url") {
+    return !!data.gameUrl;
+  } else if (data.gameType === "html") {
+    return !!data.htmlContent;
+  }
+  return false;
+}, {
+  message: "Please provide either a Game URL or HTML content based on your selection",
+  path: ["gameUrl"], // This will show the error under the gameUrl field
 });
 
 type CreateGameFormValues = z.infer<typeof createGameSchema>;
@@ -40,6 +55,9 @@ export default function CreateGameModal({ isOpen, onClose, onSuccess }: CreateGa
     resolver: zodResolver(createGameSchema),
     defaultValues: {
       categoryIds: [],
+      gameType: "url",
+      gameUrl: "",
+      htmlContent: "",
     },
   });
 
@@ -64,15 +82,25 @@ export default function CreateGameModal({ isOpen, onClose, onSuccess }: CreateGa
 
     setIsSubmitting(true);
     try {
+      // Prepare the submission data based on game type
+      const submissionData = {
+        ...values,
+        creatorId: user.id,
+        platformId: parseInt(values.platformId),
+        categoryIds: values.categoryIds.map(id => parseInt(id)),
+      };
+
+      // Remove unnecessary fields based on game type
+      if (values.gameType === "url") {
+        submissionData.htmlContent = ""; // No HTML for URL game type
+      } else if (values.gameType === "html") {
+        submissionData.gameUrl = ""; // No URL for HTML game type
+      }
+
       const response = await fetch('/api/games', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...values,
-          creatorId: user.id,
-          platformId: parseInt(values.platformId),
-          categoryIds: values.categoryIds.map(id => parseInt(id)),
-        }),
+        body: JSON.stringify(submissionData),
       });
 
       if (!response.ok) {
@@ -215,17 +243,74 @@ export default function CreateGameModal({ isOpen, onClose, onSuccess }: CreateGa
 
             <FormField
               control={form.control}
-              name="gameUrl"
+              name="gameType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Game URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter game URL" {...field} />
-                  </FormControl>
+                  <FormLabel>Game Type</FormLabel>
+                  <div className="flex space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="url-option"
+                        value="url"
+                        checked={field.value === "url"}
+                        onChange={() => field.onChange("url")}
+                        className="w-4 h-4 accent-purple-600"
+                      />
+                      <label htmlFor="url-option" className="cursor-pointer">Website URL</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="html-option"
+                        value="html"
+                        checked={field.value === "html"}
+                        onChange={() => field.onChange("html")}
+                        className="w-4 h-4 accent-purple-600"
+                      />
+                      <label htmlFor="html-option" className="cursor-pointer">HTML Content</label>
+                    </div>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {form.watch("gameType") === "url" && (
+              <FormField
+                control={form.control}
+                name="gameUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Game URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter game URL" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {form.watch("gameType") === "html" && (
+              <FormField
+                control={form.control}
+                name="htmlContent"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>HTML Content</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Enter HTML content for your game" 
+                        {...field} 
+                        className="min-h-[150px] font-mono text-xs"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}

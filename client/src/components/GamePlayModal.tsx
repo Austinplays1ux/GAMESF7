@@ -37,7 +37,12 @@ const GamePlayModal: React.FC<GamePlayModalProps> = ({
   };
   
   const handleRefreshGame = () => {
-    if (iframeRef.current) {
+    if (game.htmlContent) {
+      // For HTML content, simply restart the loading process
+      setIsLoading(true);
+      setTimeout(() => setIsLoading(false), 1000);
+    } else if (iframeRef.current) {
+      // For URL-based games, reload the iframe
       iframeRef.current.src = iframeRef.current.src;
       setIsLoading(true);
     }
@@ -92,6 +97,11 @@ const GamePlayModal: React.FC<GamePlayModalProps> = ({
               <div className="w-32 h-32 mx-auto mb-4 animate-spin rounded-full border-t-4 border-[#007AF4] border-opacity-50"></div>
               <p className="text-lg">Loading game...</p>
             </div>
+          ) : game.htmlContent ? (
+            <div 
+              className="w-full h-full bg-white overflow-hidden"
+              dangerouslySetInnerHTML={{ __html: game.htmlContent }}
+            />
           ) : (
             <iframe
               ref={iframeRef}

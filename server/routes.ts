@@ -20,18 +20,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API routes
   app.post("/api/games", async (req: Request, res: Response) => {
     try {
-      const { title, description, platformId, creatorId, gameUrl, htmlContent, categoryIds } = req.body;
+      const { title, description, platformId, creatorId, gameType, gameUrl, htmlContent, categoryIds } = req.body;
       
-      // Create the game
-      const newGame = await storage.createGame({
+      // Prepare game data based on gameType
+      const gameData: any = {
         title,
         description,
         platformId,
         creatorId,
-        gameUrl,
-        htmlContent,
         thumbnailUrl: req.body.thumbnailUrl || `https://placehold.co/400x225/8833FF/FFFFFF?text=${encodeURIComponent(title)}`,
-      });
+      };
+      
+      // Add appropriate content based on gameType
+      if (gameType === 'url') {
+        gameData.gameUrl = gameUrl;
+      } else if (gameType === 'html') {
+        gameData.htmlContent = htmlContent;
+      }
+      
+      // Create the game
+      const newGame = await storage.createGame(gameData);
       
       // Handle game tags if provided
       if (categoryIds && Array.isArray(categoryIds)) {
