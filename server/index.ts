@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: false }));
 const PostgresqlStore = pgSession(session);
 const sessionStore = new PostgresqlStore({
   pool: pool,
-  tableName: "session" // Default table name used by connect-pg-simple
+  tableName: "user_sessions" // We'll create this table if it doesn't exist
 });
 
 // Configure session middleware
