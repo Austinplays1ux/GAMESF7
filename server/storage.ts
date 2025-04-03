@@ -94,7 +94,7 @@ export class MemStorage implements IStorage {
     };
     const fortnitePlatform: InsertPlatform = { 
       name: "Fortnite", 
-      icon: "fas fa-crosshairs", 
+      icon: "/assets/fortnite-logo.png", 
       description: "Share your Fortnite Creative maps and game modes.",
       color: "#4CAF50"
     };
