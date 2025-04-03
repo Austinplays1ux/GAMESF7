@@ -71,6 +71,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch platforms" });
     }
   });
+  
+  app.patch("/api/platforms/:id", async (req: Request, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const { name, icon, description, color } = req.body;
+      
+      // Check that the current user is admin (only admins can update platforms)
+      if (!(req.session && req.session.user && req.session.user.isAdmin)) {
+        return res.status(403).json({ message: "Not authorized to update platform" });
+      }
+      
+      const updatedPlatform = await storage.updatePlatform(id, {
+        name,
+        icon,
+        description,
+        color
+      });
+      
+      if (!updatedPlatform) {
+        return res.status(404).json({ message: "Platform not found" });
+      }
+      
+      res.json(updatedPlatform);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update platform" });
+    }
+  });
 
   app.get("/api/categories", async (_req: Request, res: Response) => {
     try {

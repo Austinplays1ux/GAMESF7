@@ -21,6 +21,7 @@ export interface IStorage {
   getPlatform(id: number): Promise<Platform | undefined>;
   getPlatformByName(name: string): Promise<Platform | undefined>;
   createPlatform(platform: InsertPlatform): Promise<Platform>;
+  updatePlatform(id: number, platformData: Partial<Platform>): Promise<Platform | undefined>;
   
   // Categories
   getCategories(): Promise<Category[]>;
@@ -182,6 +183,15 @@ export class MemStorage implements IStorage {
     return platform;
   }
   
+  async updatePlatform(id: number, platformData: Partial<Platform>): Promise<Platform | undefined> {
+    const platform = await this.getPlatform(id);
+    if (!platform) return undefined;
+    
+    const updatedPlatform = { ...platform, ...platformData };
+    this.platforms.set(id, updatedPlatform);
+    return updatedPlatform;
+  }
+  
   // Categories
   async getCategories(): Promise<Category[]> {
     return Array.from(this.categories.values());
@@ -221,7 +231,8 @@ export class MemStorage implements IStorage {
       plays: 0, 
       rating: 0, 
       createdAt: now,
-      htmlContent: insertGame.htmlContent || null 
+      htmlContent: insertGame.htmlContent || null,
+      gameUrl: insertGame.gameUrl || null
     };
     this.games.set(id, game);
     return game;
@@ -349,6 +360,19 @@ export class DatabaseStorage implements IStorage {
     return platform;
   }
   
+  async updatePlatform(id: number, platformData: Partial<Platform>): Promise<Platform | undefined> {
+    const platform = await this.getPlatform(id);
+    if (!platform) return undefined;
+    
+    const [updatedPlatform] = await db
+      .update(platforms)
+      .set(platformData)
+      .where(eq(platforms.id, id))
+      .returning();
+      
+    return updatedPlatform;
+  }
+  
   // Categories
   async getCategories(): Promise<Category[]> {
     return db.select().from(categories);
@@ -385,7 +409,8 @@ export class DatabaseStorage implements IStorage {
       isFeatured: false,
       plays: 0,
       rating: 0,
-      htmlContent: insertGame.htmlContent || null
+      htmlContent: insertGame.htmlContent || null,
+      gameUrl: insertGame.gameUrl || null
     };
     const [game] = await db.insert(games).values(gameWithDefaults).returning();
     return game;

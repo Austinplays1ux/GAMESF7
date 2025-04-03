@@ -129,6 +129,13 @@ const AppHeader: React.FC = () => {
                       <i className="fas fa-gamepad mr-2"></i> My Games
                     </DropdownMenuItem>
                   </Link>
+                  {user.isAdmin && (
+                    <Link href="/admin">
+                      <DropdownMenuItem className="flex items-center cursor-pointer">
+                        <i className="fas fa-shield-alt mr-2"></i> Admin Panel
+                      </DropdownMenuItem>
+                    </Link>
+                  )}
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem 
                     className="flex items-center text-red-400 cursor-pointer" 
@@ -184,6 +191,14 @@ const AppHeader: React.FC = () => {
           <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
             <i className="fas fa-coins mr-2"></i> Currency
           </div>
+          
+          {user?.isAdmin && (
+            <Link href="/admin">
+              <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
+                <i className="fas fa-shield-alt mr-2"></i> Admin Panel
+              </div>
+            </Link>
+          )}
           
           {!user ? (
             <>
