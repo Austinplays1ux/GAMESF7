@@ -6,6 +6,7 @@ import { GameWithDetails } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import GameDetailModal from "@/components/GameDetailModal";
 import GamePlayModal from "@/components/GamePlayModal";
+import GameCardSection from "@/components/GameCardSection";
 
 const Home: React.FC = () => {
   const [, navigate] = useLocation();
@@ -18,9 +19,38 @@ const Home: React.FC = () => {
     queryKey: ["/api/games/featured"],
   });
 
+  // Query for recommended games
+  const { data: recommendedGames = [], isLoading: isLoadingRecommended } = useQuery<GameWithDetails[]>({
+    queryKey: ["/api/games/recommended"],
+  });
+
   // Query for all games
   const { data: allGames = [], isLoading: isLoadingAll } = useQuery<GameWithDetails[]>({
     queryKey: ["/api/games"],
+  });
+  
+  // Platform IDs (based on database order)
+  const HTML_PLATFORM_ID = 1;
+  const ROBLOX_PLATFORM_ID = 2;
+  const FORTNITE_PLATFORM_ID = 3;
+  const RECROOM_PLATFORM_ID = 4;
+  
+  // Query for Roblox games
+  const { data: robloxGames = [], isLoading: isLoadingRoblox } = useQuery<GameWithDetails[]>({
+    queryKey: ['/api/games', { platformId: ROBLOX_PLATFORM_ID }],
+    queryFn: () => fetch(`/api/games?platformId=${ROBLOX_PLATFORM_ID}`).then(res => res.json()),
+  });
+  
+  // Query for Fortnite games
+  const { data: fortniteGames = [], isLoading: isLoadingFortnite } = useQuery<GameWithDetails[]>({
+    queryKey: ['/api/games', { platformId: FORTNITE_PLATFORM_ID }],
+    queryFn: () => fetch(`/api/games?platformId=${FORTNITE_PLATFORM_ID}`).then(res => res.json()),
+  });
+  
+  // Query for RecRoom games
+  const { data: recroomGames = [], isLoading: isLoadingRecroom } = useQuery<GameWithDetails[]>({
+    queryKey: ['/api/games', { platformId: RECROOM_PLATFORM_ID }],
+    queryFn: () => fetch(`/api/games?platformId=${RECROOM_PLATFORM_ID}`).then(res => res.json()),
   });
 
   const handleOpenGameDetail = (game: GameWithDetails) => {
@@ -102,140 +132,65 @@ const Home: React.FC = () => {
         </div>
 
         {/* Featured Games */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Featured Games</h2>
-            <Button 
-              variant="link" 
-              className="text-purple-400 hover:text-purple-300"
-              onClick={() => navigate("/explore")}
-            >
-              View All <i className="fas fa-chevron-right ml-1"></i>
-            </Button>
-          </div>
+        <GameCardSection
+          title="Featured Games"
+          games={featuredGames}
+          isLoading={isLoadingFeatured}
+          onViewAll={() => navigate("/explore")}
+          onGameClick={handleOpenGameDetail}
+          emptyGames={sampleGames}
+          viewAllLink="/explore"
+        />
 
-          {isLoadingFeatured ? (
-            <div className="flex flex-wrap gap-4">
-              {Array(4).fill(0).map((_, i) => (
-                <div key={i} className="w-64 rounded-lg overflow-hidden">
-                  <Skeleton className="w-full h-36" />
-                  <div className="p-2 bg-[#16082F]">
-                    <Skeleton className="h-4 w-32" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : featuredGames.length > 0 ? (
-            <div className="flex flex-wrap gap-4">
-              {featuredGames.slice(0, 4).map((game) => (
-                <div 
-                  key={game.id} 
-                  className="w-64 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
-                  onClick={() => handleOpenGameDetail(game)}
-                >
-                  <div className="relative">
-                    <img 
-                      src={game.thumbnailUrl} 
-                      alt={game.title} 
-                      className="w-full h-36 object-cover"
-                    />
-                    <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
-                      <p className="text-white text-xl font-bold">{game.title}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-4">
-              {sampleGames.map((game) => (
-                <div 
-                  key={game.id} 
-                  className="w-64 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
-                >
-                  <div className="relative">
-                    <img 
-                      src={game.thumbnailUrl} 
-                      alt={game.title} 
-                      className="w-full h-36 object-cover"
-                    />
-                    <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
-                      <p className="text-white text-xl font-bold">{game.title}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Recommended Games */}
+        <GameCardSection
+          title="Recommended Games"
+          games={recommendedGames}
+          isLoading={isLoadingRecommended}
+          onViewAll={() => navigate("/explore")}
+          onGameClick={handleOpenGameDetail}
+          emptyGames={sampleGames.slice(0, 4).reverse()}
+          viewAllLink="/explore"
+        />
 
-        {/* Recent Games */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Recent Games</h2>
-            <Button 
-              variant="link" 
-              className="text-purple-400 hover:text-purple-300"
-              onClick={() => navigate("/explore")}
-            >
-              View All <i className="fas fa-chevron-right ml-1"></i>
-            </Button>
-          </div>
+        {/* Roblox Games */}
+        <GameCardSection
+          title="Roblox Games"
+          games={robloxGames}
+          isLoading={isLoadingRoblox}
+          onViewAll={() => navigate("/explore?platform=roblox")}
+          onGameClick={handleOpenGameDetail}
+          emptyGames={sampleGames.slice(1, 3)}
+          maxDisplay={4}
+          viewAllLink="/explore?platform=roblox"
+          titleColor="text-blue-300"
+        />
 
-          {isLoadingAll ? (
-            <div className="flex flex-wrap gap-4">
-              {Array(4).fill(0).map((_, i) => (
-                <div key={i} className="w-64 rounded-lg overflow-hidden">
-                  <Skeleton className="w-full h-36" />
-                  <div className="p-2 bg-[#16082F]">
-                    <Skeleton className="h-4 w-32" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : allGames.length > 0 ? (
-            <div className="flex flex-wrap gap-4">
-              {allGames.slice(0, 4).map((game) => (
-                <div 
-                  key={game.id} 
-                  className="w-64 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
-                  onClick={() => handleOpenGameDetail(game)}
-                >
-                  <div className="relative">
-                    <img 
-                      src={game.thumbnailUrl} 
-                      alt={game.title} 
-                      className="w-full h-36 object-cover"
-                    />
-                    <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
-                      <p className="text-white text-xl font-bold">{game.title}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-4">
-              {sampleGames.slice(0, 4).reverse().map((game) => (
-                <div 
-                  key={game.id} 
-                  className="w-64 rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
-                >
-                  <div className="relative">
-                    <img 
-                      src={game.thumbnailUrl} 
-                      alt={game.title} 
-                      className="w-full h-36 object-cover"
-                    />
-                    <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
-                      <p className="text-white text-xl font-bold">{game.title}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Fortnite Games */}
+        <GameCardSection
+          title="Fortnite Games"
+          games={fortniteGames}
+          isLoading={isLoadingFortnite}
+          onViewAll={() => navigate("/explore?platform=fortnite")}
+          onGameClick={handleOpenGameDetail}
+          emptyGames={sampleGames.slice(2, 4)}
+          maxDisplay={4}
+          viewAllLink="/explore?platform=fortnite"
+          titleColor="text-green-300"
+        />
+
+        {/* RecRoom Games */}
+        <GameCardSection
+          title="RecRoom Games"
+          games={recroomGames}
+          isLoading={isLoadingRecroom}
+          onViewAll={() => navigate("/explore?platform=recroom")}
+          onGameClick={handleOpenGameDetail}
+          emptyGames={sampleGames.slice(0, 2)}
+          maxDisplay={4}
+          viewAllLink="/explore?platform=recroom"
+          titleColor="text-pink-300"
+        />
 
         {/* Platform Highlights */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
@@ -245,40 +200,56 @@ const Home: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold mb-2">HTML Games</h3>
             <p className="text-gray-200 mb-4">Play games directly in your browser without any downloads.</p>
-            <Button variant="outline" className="border-white text-white hover:bg-purple-700">
+            <Button 
+              variant="outline" 
+              className="border-white text-white hover:bg-purple-700"
+              onClick={() => navigate(`/explore?platform=${HTML_PLATFORM_ID}`)}
+            >
               Explore HTML Games
             </Button>
           </div>
 
           <div className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-lg p-6 transform transition-transform hover:scale-105">
-            <div className="mb-4">
-              <img src="/images/platforms/roblox-icon.webp" alt="Roblox" className="w-12 h-12" />
+            <div className="mb-4 text-3xl">
+              <i className="fa-brands fa-roblox"></i>
             </div>
             <h3 className="text-xl font-bold mb-2">Roblox Games</h3>
             <p className="text-gray-200 mb-4">Discover the best Roblox games created by the community.</p>
-            <Button variant="outline" className="border-white text-white hover:bg-blue-700">
+            <Button 
+              variant="outline" 
+              className="border-white text-white hover:bg-blue-700"
+              onClick={() => navigate(`/explore?platform=${ROBLOX_PLATFORM_ID}`)}
+            >
               Explore Roblox Games
             </Button>
           </div>
 
           <div className="bg-gradient-to-r from-green-900 to-green-700 rounded-lg p-6 transform transition-transform hover:scale-105">
             <div className="mb-4 text-3xl">
-              <img src="/images/recroom-logo.png" alt="RecRoom" className="w-12 h-12" />
+              <i className="fas fa-vr-cardboard"></i>
             </div>
             <h3 className="text-xl font-bold mb-2">RecRoom Games</h3>
             <p className="text-gray-200 mb-4">The best RecRoom game modes and experiences.</p>
-            <Button variant="outline" className="border-white text-white hover:bg-green-700">
+            <Button 
+              variant="outline" 
+              className="border-white text-white hover:bg-green-700"
+              onClick={() => navigate(`/explore?platform=${RECROOM_PLATFORM_ID}`)}
+            >
               Explore RecRoom Games
             </Button>
           </div>
 
           <div className="bg-gradient-to-r from-pink-900 to-pink-700 rounded-lg p-6 transform transition-transform hover:scale-105">
             <div className="mb-4 text-3xl">
-              <i className="fas fa-cubes"></i>
+              <i className="fas fa-crosshairs"></i>
             </div>
             <h3 className="text-xl font-bold mb-2">Fortnite Creative</h3>
             <p className="text-gray-200 mb-4">Amazing Fortnite Creative maps and game modes.</p>
-            <Button variant="outline" className="border-white text-white hover:bg-pink-700">
+            <Button 
+              variant="outline" 
+              className="border-white text-white hover:bg-pink-700"
+              onClick={() => navigate(`/explore?platform=${FORTNITE_PLATFORM_ID}`)}
+            >
               Explore Fortnite Games
             </Button>
           </div>
