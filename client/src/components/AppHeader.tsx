@@ -40,20 +40,17 @@ const AppHeader: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 glass-navbar">
       <div className="container mx-auto px-4">
-        <div className="flex items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center mr-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo and Navigation */}
+          <div className="flex items-center">
             <Link href="/home">
-              <div className="flex items-center">
+              <div className="flex items-center mr-6">
                 <Logo size="sm" />
               </div>
             </Link>
-          </div>
 
-          {/* Combined Nav and Search in Center */}
-          <div className="flex flex-1 justify-center items-center">
-            {/* Navigation */}
-            <nav className="hidden md:flex space-x-6 mr-4">
+            {/* Navigation - moved closer to logo */}
+            <nav className="hidden md:flex space-x-6">
               <Link href="/home">
                 <div className={`text-white sofia-pro flex items-center hover:text-gray-300 transition-colors ${location === '/home' ? 'font-medium' : ''}`}>
                   <i className="fas fa-home mr-2"></i> Home
@@ -73,28 +70,28 @@ const AppHeader: React.FC = () => {
                 <i className="fas fa-coins mr-2"></i> Currency
               </div>
             </nav>
+          </div>
 
-            {/* Search */}
-            <div className="flex items-center">
-              <div className="relative flex items-center">
-                <Input 
-                  type="text"
-                  placeholder="Search..." 
-                  className="glass-input text-white h-9 pl-10 pr-4 rounded-full focus:ring-2 focus:ring-purple-500 focus:outline-none w-44 sofia-pro"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={handleSearch}
-                />
-                <div 
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
-                  onClick={() => {
-                    if (searchQuery.trim()) {
-                      navigate(`/discover?search=${encodeURIComponent(searchQuery.trim())}`);
-                    }
-                  }}
-                >
-                  <i className="fas fa-search"></i>
-                </div>
+          {/* Search - back to original position */}
+          <div className="flex items-center ml-auto mr-4">
+            <div className="relative flex items-center">
+              <Input 
+                type="text"
+                placeholder="Search..." 
+                className="glass-input text-white h-9 pl-10 pr-4 rounded-full focus:ring-2 focus:ring-purple-500 focus:outline-none w-44 sofia-pro"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
+              />
+              <div 
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+                onClick={() => {
+                  if (searchQuery.trim()) {
+                    navigate(`/discover?search=${encodeURIComponent(searchQuery.trim())}`);
+                  }
+                }}
+              >
+                <i className="fas fa-search"></i>
               </div>
             </div>
           </div>
