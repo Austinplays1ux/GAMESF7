@@ -1,4 +1,4 @@
-import { useState, useRef, KeyboardEvent } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,6 @@ import Logo from "./Logo";
 const AppHeader: React.FC = () => {
   const [location, navigate] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const { user, logout } = useAuth();
 
   const toggleMobileMenu = () => {
@@ -28,12 +27,6 @@ const AppHeader: React.FC = () => {
       navigate('/login');
     } catch (error) {
       console.error('Failed to logout:', error);
-    }
-  };
-  
-  const handleSearch = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      navigate(`/discover?search=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
@@ -79,18 +72,8 @@ const AppHeader: React.FC = () => {
                 type="text"
                 placeholder="Search..." 
                 className="glass-input text-white h-9 pl-10 pr-4 rounded-full focus:ring-2 focus:ring-purple-500 focus:outline-none w-44 sofia-pro"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearch}
               />
-              <div 
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
-                onClick={() => {
-                  if (searchQuery.trim()) {
-                    navigate(`/discover?search=${encodeURIComponent(searchQuery.trim())}`);
-                  }
-                }}
-              >
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                 <i className="fas fa-search"></i>
               </div>
             </div>

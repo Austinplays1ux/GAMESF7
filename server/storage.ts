@@ -6,7 +6,7 @@ import {
   gameTags, type GameTag, type InsertGameTag
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 // Define storage interface
 export interface IStorage {
@@ -14,7 +14,6 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, userData: Partial<User>): Promise<User | undefined>;
   
   // Platforms
   getPlatforms(): Promise<Platform[]>;
@@ -33,7 +32,6 @@ export interface IStorage {
   getGameByTitle(title: string): Promise<Game | undefined>;
   createGame(game: InsertGame): Promise<Game>;
   getFeaturedGames(): Promise<Game[]>;
-  getRecommendedGames(): Promise<Game[]>;
   getGamesByPlatform(platformId: number): Promise<Game[]>;
   getGameDetails(gameId: number): Promise<GameWithDetails | undefined>;
   incrementGamePlays(gameId: number): Promise<void>;
@@ -41,9 +39,6 @@ export interface IStorage {
   // Game Tags
   getGameTags(gameId: number): Promise<GameTag[]>;
   addGameTag(gameTag: InsertGameTag): Promise<GameTag>;
-  
-  // Search
-  searchGames(query: string): Promise<Game[]>;
 }
 
 // In-memory storage implementation
@@ -94,7 +89,7 @@ export class MemStorage implements IStorage {
     };
     const fortnitePlatform: InsertPlatform = { 
       name: "Fortnite", 
-      icon: "/assets/fortnite-logo.png", 
+      icon: "fas fa-crosshairs", 
       description: "Share your Fortnite Creative maps and game modes.",
       color: "#4CAF50"
     };
@@ -155,8 +150,7 @@ export class MemStorage implements IStorage {
       ...insertUser, 
       id, 
       createdAt: now,
-      avatarUrl: insertUser.avatarUrl || null,
-      bio: null
+      avatarUrl: insertUser.avatarUrl || null
     };
     this.users.set(id, user);
     return user;
@@ -231,22 +225,6 @@ export class MemStorage implements IStorage {
     return Array.from(this.games.values()).filter(game => game.isFeatured);
   }
   
-  async getRecommendedGames(): Promise<Game[]> {
-    // Return games with highest play counts (top 5)
-    return Array.from(this.games.values())
-      .sort((a, b) => b.plays - a.plays)
-      .slice(0, 5);
-  }
-  
-  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
-    const user = await this.getUser(id);
-    if (!user) return undefined;
-    
-    const updatedUser = { ...user, ...userData };
-    this.users.set(id, updatedUser);
-    return updatedUser;
-  }
-  
   async getGamesByPlatform(platformId: number): Promise<Game[]> {
     return Array.from(this.games.values()).filter(game => game.platformId === platformId);
   }
@@ -293,17 +271,6 @@ export class MemStorage implements IStorage {
     this.gameTags.set(id, gameTag);
     return gameTag;
   }
-  
-  // Search
-  async searchGames(query: string): Promise<Game[]> {
-    const lowercaseQuery = query.toLowerCase();
-    const allGames = Array.from(this.games.values());
-    
-    return allGames.filter(game => 
-      game.title.toLowerCase().includes(lowercaseQuery) || 
-      game.description.toLowerCase().includes(lowercaseQuery)
-    );
-  }
 }
 
 // Database storage implementation
@@ -320,12 +287,11 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createUser(insertUser: InsertUser): Promise<User> {
-    const userWithDefaults = {
+    const userWithNullAvatar = {
       ...insertUser,
-      avatarUrl: insertUser.avatarUrl || null,
-      bio: null
+      avatarUrl: insertUser.avatarUrl || null
     };
-    const [user] = await db.insert(users).values(userWithDefaults).returning();
+    const [user] = await db.insert(users).values(userWithNullAvatar).returning();
     return user;
   }
   
@@ -395,24 +361,6 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(games).where(eq(games.isFeatured, true));
   }
   
-  async getRecommendedGames(): Promise<Game[]> {
-    // Return games with highest play counts (top 5)
-    return db.select().from(games).orderBy(sql`${games.plays} DESC`).limit(5);
-  }
-  
-  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
-    const user = await this.getUser(id);
-    if (!user) return undefined;
-    
-    const [updatedUser] = await db
-      .update(users)
-      .set(userData)
-      .where(eq(users.id, id))
-      .returning();
-      
-    return updatedUser;
-  }
-  
   async getGamesByPlatform(platformId: number): Promise<Game[]> {
     return db.select().from(games).where(eq(games.platformId, platformId));
   }
@@ -458,17 +406,6 @@ export class DatabaseStorage implements IStorage {
   async addGameTag(insertGameTag: InsertGameTag): Promise<GameTag> {
     const [gameTag] = await db.insert(gameTags).values(insertGameTag).returning();
     return gameTag;
-  }
-  
-  // Search
-  async searchGames(query: string): Promise<Game[]> {
-    const lowercaseQuery = `%${query.toLowerCase()}%`;
-    
-    return db.select()
-      .from(games)
-      .where(
-        sql`LOWER(${games.title}) LIKE ${lowercaseQuery} OR LOWER(${games.description}) LIKE ${lowercaseQuery}`
-      );
   }
 }
 
