@@ -41,6 +41,9 @@ export interface IStorage {
   // Game Tags
   getGameTags(gameId: number): Promise<GameTag[]>;
   addGameTag(gameTag: InsertGameTag): Promise<GameTag>;
+  
+  // Search
+  searchGames(query: string): Promise<Game[]>;
 }
 
 // In-memory storage implementation
@@ -290,6 +293,17 @@ export class MemStorage implements IStorage {
     this.gameTags.set(id, gameTag);
     return gameTag;
   }
+  
+  // Search
+  async searchGames(query: string): Promise<Game[]> {
+    const lowercaseQuery = query.toLowerCase();
+    const allGames = Array.from(this.games.values());
+    
+    return allGames.filter(game => 
+      game.title.toLowerCase().includes(lowercaseQuery) || 
+      game.description.toLowerCase().includes(lowercaseQuery)
+    );
+  }
 }
 
 // Database storage implementation
@@ -444,6 +458,17 @@ export class DatabaseStorage implements IStorage {
   async addGameTag(insertGameTag: InsertGameTag): Promise<GameTag> {
     const [gameTag] = await db.insert(gameTags).values(insertGameTag).returning();
     return gameTag;
+  }
+  
+  // Search
+  async searchGames(query: string): Promise<Game[]> {
+    const lowercaseQuery = `%${query.toLowerCase()}%`;
+    
+    return db.select()
+      .from(games)
+      .where(
+        sql`LOWER(${games.title}) LIKE ${lowercaseQuery} OR LOWER(${games.description}) LIKE ${lowercaseQuery}`
+      );
   }
 }
 

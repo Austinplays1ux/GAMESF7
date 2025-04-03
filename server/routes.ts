@@ -2,7 +2,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertGameSchema, insertGameTagSchema } from "@shared/schema";
+import { insertUserSchema, insertGameSchema, insertGameTagSchema, type GameWithDetails } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -67,15 +67,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/games", async (req: Request, res: Response) => {
     try {
       const platformId = req.query.platformId ? Number(req.query.platformId) : undefined;
+      const searchQuery = req.query.search as string | undefined;
       
       let games;
-      if (platformId) {
+      if (searchQuery) {
+        // Search for games
+        games = await storage.searchGames(searchQuery);
+      } else if (platformId) {
+        // Filter by platform
         games = await storage.getGamesByPlatform(platformId);
       } else {
+        // Get all games
         games = await storage.getGames();
       }
       
-      res.json(games);
+      // Get detailed info about each game
+      const gameDetailsPromises = games.map(game => storage.getGameDetails(game.id));
+      const gameDetails = await Promise.all(gameDetailsPromises);
+      
+      // Filter out undefined results
+      const filteredGames = gameDetails.filter((game): game is GameWithDetails => game !== undefined);
+      
+      res.json(filteredGames);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch games" });
     }
@@ -84,7 +97,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/games/featured", async (_req: Request, res: Response) => {
     try {
       const featuredGames = await storage.getFeaturedGames();
-      res.json(featuredGames);
+      
+      // Get detailed info about each game
+      const gameDetailsPromises = featuredGames.map(game => storage.getGameDetails(game.id));
+      const gameDetails = await Promise.all(gameDetailsPromises);
+      
+      // Filter out undefined results
+      const filteredGames = gameDetails.filter((game): game is GameWithDetails => game !== undefined);
+      
+      res.json(filteredGames);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch featured games" });
     }
@@ -93,7 +114,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/games/recommended", async (_req: Request, res: Response) => {
     try {
       const recommendedGames = await storage.getRecommendedGames();
-      res.json(recommendedGames);
+      
+      // Get detailed info about each game
+      const gameDetailsPromises = recommendedGames.map(game => storage.getGameDetails(game.id));
+      const gameDetails = await Promise.all(gameDetailsPromises);
+      
+      // Filter out undefined results
+      const filteredGames = gameDetails.filter((game): game is GameWithDetails => game !== undefined);
+      
+      res.json(filteredGames);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch recommended games" });
     }
