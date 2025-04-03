@@ -40,9 +40,9 @@ const AppHeader: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 glass-navbar">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center mr-4">
             <Link href="/home">
               <div className="flex items-center">
                 <Logo size="sm" />
@@ -50,48 +50,51 @@ const AppHeader: React.FC = () => {
             </Link>
           </div>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex space-x-6">
-            <Link href="/home">
-              <div className={`text-white sofia-pro flex items-center hover:text-gray-300 transition-colors ${location === '/home' ? 'font-medium' : ''}`}>
-                <i className="fas fa-home mr-2"></i> Home
+          {/* Combined Nav and Search in Center */}
+          <div className="flex flex-1 justify-center items-center">
+            {/* Navigation */}
+            <nav className="hidden md:flex space-x-6 mr-4">
+              <Link href="/home">
+                <div className={`text-white sofia-pro flex items-center hover:text-gray-300 transition-colors ${location === '/home' ? 'font-medium' : ''}`}>
+                  <i className="fas fa-home mr-2"></i> Home
+                </div>
+              </Link>
+              <Link href="/discover">
+                <div className={`text-white sofia-pro flex items-center hover:text-gray-300 transition-colors ${location === '/discover' ? 'font-medium' : ''}`}>
+                  <i className="fas fa-compass mr-2"></i> Explore
+                </div>
+              </Link>
+              <Link href="/create">
+                <div className={`text-white sofia-pro flex items-center hover:text-gray-300 transition-colors ${location === '/create' ? 'font-medium' : ''}`}>
+                  <i className="fas fa-plus-circle mr-2"></i> Create
+                </div>
+              </Link>
+              <div className="text-white sofia-pro flex items-center hover:text-gray-300 cursor-pointer transition-colors">
+                <i className="fas fa-coins mr-2"></i> Currency
               </div>
-            </Link>
-            <Link href="/discover">
-              <div className={`text-white sofia-pro flex items-center hover:text-gray-300 transition-colors ${location === '/discover' ? 'font-medium' : ''}`}>
-                <i className="fas fa-compass mr-2"></i> Explore
-              </div>
-            </Link>
-            <Link href="/create">
-              <div className={`text-white sofia-pro flex items-center hover:text-gray-300 transition-colors ${location === '/create' ? 'font-medium' : ''}`}>
-                <i className="fas fa-plus-circle mr-2"></i> Create
-              </div>
-            </Link>
-            <div className="text-white sofia-pro flex items-center hover:text-gray-300 cursor-pointer transition-colors">
-              <i className="fas fa-coins mr-2"></i> Currency
-            </div>
-          </nav>
+            </nav>
 
-          {/* Search */}
-          <div className="flex items-center ml-auto mr-4">
-            <div className="relative flex items-center">
-              <Input 
-                type="text"
-                placeholder="Search..." 
-                className="glass-input text-white h-9 pl-10 pr-4 rounded-full focus:ring-2 focus:ring-purple-500 focus:outline-none w-44 sofia-pro"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearch}
-              />
-              <div 
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
-                onClick={() => {
-                  if (searchQuery.trim()) {
-                    navigate(`/discover?search=${encodeURIComponent(searchQuery.trim())}`);
-                  }
-                }}
-              >
-                <i className="fas fa-search"></i>
+            {/* Search */}
+            <div className="flex items-center">
+              <div className="relative flex items-center">
+                <Input 
+                  type="text"
+                  placeholder="Search..." 
+                  className="glass-input text-white h-9 pl-10 pr-4 rounded-full focus:ring-2 focus:ring-purple-500 focus:outline-none w-44 sofia-pro"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearch}
+                />
+                <div 
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+                  onClick={() => {
+                    if (searchQuery.trim()) {
+                      navigate(`/discover?search=${encodeURIComponent(searchQuery.trim())}`);
+                    }
+                  }}
+                >
+                  <i className="fas fa-search"></i>
+                </div>
               </div>
             </div>
           </div>
