@@ -131,6 +131,17 @@ const Home: React.FC = () => {
           </div>
         </div>
 
+        {/* Recommended Games - Now First */}
+        <GameCardSection
+          title="Recommended Games"
+          games={recommendedGames}
+          isLoading={isLoadingRecommended}
+          onViewAll={() => navigate("/explore")}
+          onGameClick={handleOpenGameDetail}
+          emptyGames={sampleGames.slice(0, 4).reverse()}
+          viewAllLink="/explore"
+        />
+
         {/* Featured Games */}
         <GameCardSection
           title="Featured Games"
@@ -139,17 +150,6 @@ const Home: React.FC = () => {
           onViewAll={() => navigate("/explore")}
           onGameClick={handleOpenGameDetail}
           emptyGames={sampleGames}
-          viewAllLink="/explore"
-        />
-
-        {/* Recommended Games */}
-        <GameCardSection
-          title="Recommended Games"
-          games={recommendedGames}
-          isLoading={isLoadingRecommended}
-          onViewAll={() => navigate("/explore")}
-          onGameClick={handleOpenGameDetail}
-          emptyGames={sampleGames.slice(0, 4).reverse()}
           viewAllLink="/explore"
         />
 

@@ -47,18 +47,36 @@ export function MultiSelect({
     }
   };
 
+  // If clicking outside, close the dropdown
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (open && !e.composedPath().includes(inputRef.current as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
   return (
     <div className={`relative ${className}`}>
       <Command
         onKeyDown={handleKeyDown}
         className="overflow-visible bg-transparent"
       >
-        <div className="flex flex-wrap gap-1 border rounded-md px-3 py-2 w-full">
+        <div 
+          className="flex flex-wrap gap-1 border rounded-md px-3 py-2 w-full bg-background text-foreground cursor-pointer glass-input"
+          onClick={() => {
+            setOpen(true);
+            inputRef.current?.focus();
+          }}
+        >
           {selected.map((selectedValue) => {
             const option = options.find((o) => o.value === selectedValue);
             const label = option ? option.label : selectedValue;
             return (
-              <Badge key={selectedValue} variant="secondary">
+              <Badge key={selectedValue} variant="secondary" className="bg-purple-600/20 text-white hover:bg-purple-600/30">
                 {label}
                 <button
                   className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -71,9 +89,12 @@ export function MultiSelect({
                     e.preventDefault();
                     e.stopPropagation();
                   }}
-                  onClick={() => handleUnselect(selectedValue)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUnselect(selectedValue);
+                  }}
                 >
-                  <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                  <X className="h-3 w-3 text-white hover:text-gray-200" />
                 </button>
               </Badge>
             );
@@ -82,15 +103,18 @@ export function MultiSelect({
             ref={inputRef}
             value={inputValue}
             onValueChange={setInputValue}
-            onBlur={() => setOpen(false)}
+            onBlur={() => {
+              // Delay closing to allow for click selection
+              setTimeout(() => setOpen(false), 200);
+            }}
             onFocus={() => setOpen(true)}
             placeholder={selected.length === 0 ? placeholder : ""}
-            className="ml-2 bg-transparent outline-none placeholder:text-muted-foreground flex-1 min-w-[100px] h-8"
+            className="ml-2 bg-transparent outline-none placeholder:text-gray-400 text-white flex-1 min-w-[100px] h-8"
           />
         </div>
         <div className="relative">
           {open && options.length > 0 && (
-            <div className="absolute w-full z-10 top-2 rounded-md border bg-popover text-popover-foreground shadow-md outline-none mt-2 max-h-64 overflow-y-auto">
+            <div className="absolute w-full z-50 top-2 rounded-md border bg-[#150A29] border-purple-500/20 text-white shadow-lg shadow-purple-950/30 outline-none mt-2 max-h-64 overflow-y-auto">
               <CommandGroup className="overflow-visible">
                 {options
                   .filter((option) => {
@@ -107,7 +131,7 @@ export function MultiSelect({
                     <CommandItem
                       key={option.value}
                       onSelect={() => handleSelect(option.value)}
-                      className="cursor-pointer"
+                      className="cursor-pointer hover:bg-purple-600/20"
                     >
                       {option.label}
                     </CommandItem>
@@ -119,7 +143,7 @@ export function MultiSelect({
                     .toLowerCase()
                     .includes(inputValue.toLowerCase());
                 }).length === 0 && (
-                  <p className="py-2 px-4 text-sm text-muted-foreground">
+                  <p className="py-2 px-4 text-sm text-gray-400">
                     No items found.
                   </p>
                 )}
