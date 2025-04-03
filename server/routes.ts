@@ -2,8 +2,17 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertGameSchema, insertGameTagSchema, type GameWithDetails } from "@shared/schema";
+import { insertUserSchema, insertGameSchema, insertGameTagSchema, type GameWithDetails, User } from "@shared/schema";
 import { z } from "zod";
+
+// Type augmentation for Express Request to include session user
+declare module "express-session" {
+  interface SessionData {
+    user: User;
+    userId: number;
+    isAuthenticated: boolean;
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -199,9 +208,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isAdmin: user.username === 'crystalgamer77',
         isOwner: user.username === 'crystalgamer77',
       };
+
+      // Set up session with user information
+      if (req.session) {
+        req.session.user = userData as User;
+        req.session.userId = user.id;
+        req.session.isAuthenticated = true;
+      }
+
       res.status(200).json(userData);
     } catch (error) {
       res.status(500).json({ message: "Login failed", error: String(error) });
+    }
+  });
+  
+  // Add a logout endpoint to terminate the session
+  app.post("/api/logout", (req: Request, res: Response) => {
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).json({ message: "Failed to logout" });
+        }
+        
+        res.clearCookie("gamesf7.sid");
+        return res.status(200).json({ message: "Logged out successfully" });
+      });
+    } else {
+      return res.status(200).json({ message: "Already logged out" });
+    }
+  });
+  
+  // Add an endpoint to get the current logged-in user
+  app.get("/api/user", (req: Request, res: Response) => {
+    if (req.session && req.session.isAuthenticated && req.session.user) {
+      return res.status(200).json(req.session.user);
+    } else {
+      return res.status(401).json({ message: "Not authenticated" });
     }
   });
 
@@ -209,6 +251,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = Number(req.params.id);
       const { username, email, avatarUrl, bio } = req.body;
+      
+      // Check that the current user owns this profile and is authorized to update it
+      if (req.session && req.session.userId !== id) {
+        return res.status(403).json({ message: "Not authorized to update this user profile" });
+      }
       
       const updatedUser = await storage.updateUser(id, {
         username,
@@ -223,6 +270,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Don't send password in response
       const { password: _, ...userData } = updatedUser;
+      
+      // Update the session with the new user data
+      if (req.session) {
+        req.session.user = {
+          ...userData,
+          isAdmin: userData.username === 'crystalgamer77',
+          isOwner: userData.username === 'crystalgamer77',
+        } as User;
+      }
+      
       res.json(userData);
     } catch (error) {
       res.status(500).json({ message: "Failed to update user" });
@@ -240,6 +297,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const newUser = await storage.createUser(validatedData);
+      
+      // Also log the user in after registration by setting up the session
+      if (req.session) {
+        const { password: _, ...userWithoutPassword } = newUser;
+        const userData = {
+          ...userWithoutPassword,
+          isAdmin: newUser.username === 'crystalgamer77',
+          isOwner: newUser.username === 'crystalgamer77',
+        };
+        
+        req.session.user = userData as User;
+        req.session.userId = newUser.id;
+        req.session.isAuthenticated = true;
+      }
+      
       res.status(201).json(newUser);
     } catch (error) {
       if (error instanceof z.ZodError) {
