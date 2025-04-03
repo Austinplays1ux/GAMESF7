@@ -149,9 +149,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/login", async (req: Request, res: Response) => {
     try {
-      const { username, password } = req.body;
+      const { username, password: inputPassword } = req.body;
       
-      if (!username || !password) {
+      if (!username || !inputPassword) {
         return res.status(400).json({ message: "Username and password are required" });
       }
       
@@ -159,17 +159,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUserByUsername(username);
       
       // Check if user exists and password matches
-      if (!user || user.password !== password) {
+      if (!user || user.password !== inputPassword) {
         return res.status(401).json({ message: "Invalid username or password" });
       }
       
       // Check if user is crystalgamer77 and add admin privileges
+      const { password: _, ...userWithoutPassword } = user;
       const userData = {
-        ...user,
+        ...userWithoutPassword,
         isAdmin: user.username === 'crystalgamer77',
         isOwner: user.username === 'crystalgamer77',
       };
-      delete userData.password;
       res.status(200).json(userData);
     } catch (error) {
       res.status(500).json({ message: "Login failed", error: String(error) });

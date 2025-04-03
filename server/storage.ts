@@ -6,7 +6,7 @@ import {
   gameTags, type GameTag, type InsertGameTag
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 // Define storage interface
 export interface IStorage {
@@ -152,7 +152,8 @@ export class MemStorage implements IStorage {
       ...insertUser, 
       id, 
       createdAt: now,
-      avatarUrl: insertUser.avatarUrl || null
+      avatarUrl: insertUser.avatarUrl || null,
+      bio: null
     };
     this.users.set(id, user);
     return user;
@@ -227,6 +228,22 @@ export class MemStorage implements IStorage {
     return Array.from(this.games.values()).filter(game => game.isFeatured);
   }
   
+  async getRecommendedGames(): Promise<Game[]> {
+    // Return games with highest play counts (top 5)
+    return Array.from(this.games.values())
+      .sort((a, b) => b.plays - a.plays)
+      .slice(0, 5);
+  }
+  
+  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
+    const user = await this.getUser(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, ...userData };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+  
   async getGamesByPlatform(platformId: number): Promise<Game[]> {
     return Array.from(this.games.values()).filter(game => game.platformId === platformId);
   }
@@ -289,11 +306,12 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createUser(insertUser: InsertUser): Promise<User> {
-    const userWithNullAvatar = {
+    const userWithDefaults = {
       ...insertUser,
-      avatarUrl: insertUser.avatarUrl || null
+      avatarUrl: insertUser.avatarUrl || null,
+      bio: null
     };
-    const [user] = await db.insert(users).values(userWithNullAvatar).returning();
+    const [user] = await db.insert(users).values(userWithDefaults).returning();
     return user;
   }
   
@@ -361,6 +379,24 @@ export class DatabaseStorage implements IStorage {
   
   async getFeaturedGames(): Promise<Game[]> {
     return db.select().from(games).where(eq(games.isFeatured, true));
+  }
+  
+  async getRecommendedGames(): Promise<Game[]> {
+    // Return games with highest play counts (top 5)
+    return db.select().from(games).orderBy(sql`${games.plays} DESC`).limit(5);
+  }
+  
+  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
+    const user = await this.getUser(id);
+    if (!user) return undefined;
+    
+    const [updatedUser] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+      
+    return updatedUser;
   }
   
   async getGamesByPlatform(platformId: number): Promise<Game[]> {
