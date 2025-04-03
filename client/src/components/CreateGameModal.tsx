@@ -11,7 +11,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MultiSelect } from '@/components/ui/multi-select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CreateGameModalProps {
   isOpen: boolean;
@@ -158,27 +159,59 @@ export default function CreateGameModal({ isOpen, onClose, onSuccess }: CreateGa
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="categoryIds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categories</FormLabel>
-                  <FormControl>
-                    <MultiSelect
-                      selected={field.value}
-                      options={categories.map((cat: any) => ({
-                        value: cat.id.toString(),
-                        label: cat.name,
-                      }))}
-                      onChange={field.onChange}
-                      placeholder="Select categories"
+            <div className="space-y-2">
+              <FormLabel>Categories</FormLabel>
+              <div className="glass-input border rounded-md p-2">
+                <ScrollArea className="h-36">
+                  <div className="space-y-2 p-2">
+                  {categories.map((category: any) => (
+                    <FormField
+                      key={category.id}
+                      control={form.control}
+                      name="categoryIds"
+                      render={({ field }) => {
+                        return (
+                          <FormItem
+                            key={category.id}
+                            className="flex flex-row items-start space-x-3 space-y-0 p-1 rounded-md hover:bg-purple-600/10"
+                          >
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(category.id.toString())}
+                                onCheckedChange={(checked) => {
+                                  const currentValue = [...field.value || []];
+                                  if (checked) {
+                                    // Add the category ID if it's not already in the array
+                                    if (!currentValue.includes(category.id.toString())) {
+                                      field.onChange([...currentValue, category.id.toString()]);
+                                    }
+                                  } else {
+                                    // Remove the category ID
+                                    field.onChange(
+                                      currentValue.filter((value) => value !== category.id.toString())
+                                    );
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-normal text-white cursor-pointer">
+                              <i className={`${category.icon} mr-2`}></i>
+                              {category.name}
+                            </FormLabel>
+                          </FormItem>
+                        );
+                      }}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  ))}
+                  </div>
+                </ScrollArea>
+              </div>
+              {form.formState.errors.categoryIds && (
+                <p className="text-sm font-medium text-red-500">
+                  {form.formState.errors.categoryIds.message}
+                </p>
               )}
-            />
+            </div>
 
             <FormField
               control={form.control}
