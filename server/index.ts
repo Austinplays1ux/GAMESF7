@@ -1,10 +1,34 @@
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
+import pgSession from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { pool } from "./db";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Set up session store with PostgreSQL
+const PostgresqlStore = pgSession(session);
+const sessionStore = new PostgresqlStore({
+  pool: pool,
+  tableName: "user_sessions" // We'll create this table if it doesn't exist
+});
+
+// Configure session middleware
+app.use(session({
+  store: sessionStore,
+  secret: "gamesf7_secret_key", // In production, use environment variable
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    httpOnly: true
+  },
+  name: "gamesf7.sid"
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
