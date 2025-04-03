@@ -36,9 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const response = await apiRequest("GET", "/api/user");
-        if (response.ok) {
-          const userData = await response.json();
+        const userData = await apiRequest<User | null>("/api/user");
+        if (userData) {
           setUser(userData);
         }
       } catch (error) {
@@ -56,14 +55,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      const response = await apiRequest("POST", "/api/login", credentials);
+      // Fixed the apiRequest call to match the function signature
+      const userData = await apiRequest<User>("/api/login", {
+        method: "POST",
+        body: JSON.stringify(credentials)
+      });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to log in");
-      }
-      
-      const userData = await response.json();
       setUser(userData);
       
       toast({
@@ -94,14 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      const response = await apiRequest("POST", "/api/users", userData);
+      const newUser = await apiRequest<User>("/api/users", {
+        method: "POST",
+        body: JSON.stringify(userData)
+      });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create account");
-      }
-      
-      const newUser = await response.json();
       setUser(newUser);
       
       toast({
@@ -132,11 +126,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      const response = await apiRequest("POST", "/api/logout");
-      
-      if (!response.ok) {
-        throw new Error("Failed to log out");
-      }
+      await apiRequest("/api/logout", {
+        method: "POST"
+      });
       
       setUser(null);
       
