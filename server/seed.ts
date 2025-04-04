@@ -98,9 +98,9 @@ async function seed() {
   });
   
   const game2 = await storage.createGame({
-    title: "Bloxd.io",
+    title: "Blocky World",
     description: "Build anything you can imagine in this Roblox adventure game with unlimited possibilities.",
-    thumbnailUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcmEiwTnN6WH37OVdzEeYHYDAbnYt7flcUhQ&s",
+    thumbnailUrl: "https://placehold.co/400x225/00A2FF/FFFFFF?text=Blocky+World",
     platformId: roblox.id,
     creatorId: admin.id,
     gameUrl: "https://www.roblox.com/games/1234567890/blocky-world"
