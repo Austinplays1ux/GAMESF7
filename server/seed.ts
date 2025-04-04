@@ -141,9 +141,14 @@ async function seed() {
   
   console.log("Added game categories");
   
-  // Update featured game - using direct SQL since we don't have a method for this in the storage
+  // Update featured and recommended games
   await db.execute(
     `UPDATE games SET is_featured = true WHERE id = ${game1.id}`
+  );
+  
+  // Set more plays for Bloxd.io to make it appear in recommended
+  await db.execute(
+    `UPDATE games SET plays = 100 WHERE id = ${game2.id}`
   );
   
   console.log("Set featured game");
