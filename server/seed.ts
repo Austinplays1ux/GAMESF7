@@ -98,12 +98,12 @@ async function seed() {
   });
   
   const game2 = await storage.createGame({
-    title: "Blocky World",
-    description: "Build anything you can imagine in this Roblox adventure game with unlimited possibilities.",
-    thumbnailUrl: "https://placehold.co/400x225/00A2FF/FFFFFF?text=Blocky+World",
-    platformId: roblox.id,
+    title: "Bloxd.io",
+    description: "Build anything you can imagine in this multiplayer block building game.",
+    thumbnailUrl: "https://images.crazygames.com/games/bloxd-io/cover-1600236603408.png",
+    platformId: html.id,
     creatorId: admin.id,
-    gameUrl: "https://www.roblox.com/games/1234567890/blocky-world"
+    htmlContent: `<iframe src="https://bloxd.io" style="width:100%; height:100%; border:none;" allow="fullscreen" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals"></iframe>`
   });
   
   const game3 = await storage.createGame({
