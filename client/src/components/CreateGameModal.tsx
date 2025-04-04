@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -28,20 +29,18 @@ const createGameSchema = z.object({
   gameType: z.enum(["url", "html"], { 
     required_error: "Please select a game type" 
   }),
-  gameUrl: z.string().url("Please enter a valid URL").optional().or(z.literal('')),
-  htmlContent: z.string().optional().or(z.literal('')),
+  gameUrl: z.string().url("Please enter a valid URL").optional(),
+  htmlContent: z.string().min(1, "HTML content is required").optional(),
   thumbnailUrl: z.string().url("Please enter a valid thumbnail URL"),
 }).refine((data) => {
-  // Ensure that based on gameType, the corresponding field has a value
   if (data.gameType === "url") {
     return !!data.gameUrl;
-  } else if (data.gameType === "html") {
+  } else {
     return !!data.htmlContent;
   }
-  return false;
 }, {
   message: "Please provide either a Game URL or HTML content based on your selection",
-  path: ["gameUrl"], // This will show the error under the gameUrl field
+  path: ["gameUrl"],
 });
 
 type CreateGameFormValues = z.infer<typeof createGameSchema>;
@@ -82,20 +81,14 @@ export default function CreateGameModal({ isOpen, onClose, onSuccess }: CreateGa
 
     setIsSubmitting(true);
     try {
-      // Prepare the submission data based on game type
       const submissionData = {
         ...values,
         creatorId: user.id,
         platformId: parseInt(values.platformId),
         categoryIds: values.categoryIds.map(id => parseInt(id)),
+        gameUrl: values.gameType === "url" ? values.gameUrl : "",
+        htmlContent: values.gameType === "html" ? values.htmlContent : "",
       };
-
-      // Remove unnecessary fields based on game type
-      if (values.gameType === "url") {
-        submissionData.htmlContent = ""; // No HTML for URL game type
-      } else if (values.gameType === "html") {
-        submissionData.gameUrl = ""; // No URL for HTML game type
-      }
 
       const response = await fetch('/api/games', {
         method: 'POST',
@@ -114,6 +107,7 @@ export default function CreateGameModal({ isOpen, onClose, onSuccess }: CreateGa
 
       onSuccess?.();
       onClose();
+      form.reset();
     } catch (error) {
       toast({
         title: "Error",
@@ -210,12 +204,10 @@ export default function CreateGameModal({ isOpen, onClose, onSuccess }: CreateGa
                                   onCheckedChange={(checked) => {
                                     const currentValue = [...field.value || []];
                                     if (checked) {
-                                      // Add the category ID if it's not already in the array
                                       if (!currentValue.includes(category.id.toString())) {
                                         field.onChange([...currentValue, category.id.toString()]);
                                       }
                                     } else {
-                                      // Remove the category ID
                                       field.onChange(
                                         currentValue.filter((value) => value !== category.id.toString())
                                       );
