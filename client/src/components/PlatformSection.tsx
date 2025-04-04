@@ -32,9 +32,9 @@ const PlatformSection: React.FC = () => {
               <div className="w-16 h-16 flex items-center justify-center rounded-full mb-4" 
                    style={{ backgroundColor: `${platform.color}20` }}>
                 {platform.icon.startsWith('/') ? (
-                  <img src={platform.icon} alt={platform.name} className="w-12 h-12 object-contain" />
+                  <img src={platform.icon} alt={platform.name} className="w-8 h-8 object-contain" />
                 ) : (
-                  <i className={`${platform.icon} text-4xl`} style={{ color: platform.color }}></i>
+                  <i className={`${platform.icon} text-xl`} style={{ color: platform.color }}></i>
                 )}
               </div>
               <h3 className="text-lg font-semibold font-montserrat mb-2">{platform.name} Games</h3>
