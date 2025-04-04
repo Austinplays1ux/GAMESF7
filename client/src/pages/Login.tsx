@@ -104,13 +104,12 @@ const Login: React.FC = () => {
       return;
     }
 
-    const emailSchema = z.string().email();
-    try {
-      emailSchema.parse(signupForm.email);
-    } catch (error) {
+    // Enhanced email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(signupForm.email)) {
       toast({
         title: "Invalid email",
-        description: "Please enter a valid email address",
+        description: "Please enter a valid email address (e.g., user@example.com)",
         variant: "destructive",
       });
       return;
