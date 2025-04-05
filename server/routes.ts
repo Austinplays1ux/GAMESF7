@@ -228,13 +228,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username and password are required" });
       }
       
+      console.log(`Login attempt for user: ${username}`);
+      
       // Get user from storage
       const user = await storage.getUserByUsername(username);
       
+      // Log for debugging
+      console.log(`User found in database:`, user ? `Yes, ID: ${user.id}` : "No");
+      
       // Check if user exists and password matches
       if (!user || user.password !== inputPassword) {
+        console.log("Authentication failed: Invalid username or password");
         return res.status(401).json({ message: "Invalid username or password" });
       }
+      
+      console.log(`Password verification successful for user: ${user.username}`);
       
       // Check if user is crystalgamer77 and add admin privileges
       const { password: _, ...userWithoutPassword } = user;
@@ -249,6 +257,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.user = userData as User;
         req.session.userId = user.id;
         req.session.isAuthenticated = true;
+        console.log(`Session created for user ID: ${user.id}`);
+      } else {
+        console.log("Warning: No session object available");
       }
 
       res.status(200).json(userData);
@@ -275,9 +286,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add an endpoint to get the current logged-in user
   app.get("/api/user", (req: Request, res: Response) => {
+    console.log("Get current user request received");
+    console.log("Session exists:", Boolean(req.session));
+    
+    if (req.session) {
+      console.log("Session auth status:", req.session.isAuthenticated);
+      console.log("Session user exists:", Boolean(req.session.user));
+      if (req.session.user) {
+        console.log("User in session:", req.session.user.id, req.session.user.username);
+      }
+    }
+    
     if (req.session && req.session.isAuthenticated && req.session.user) {
+      console.log("Returning authenticated user");
       return res.status(200).json(req.session.user);
     } else {
+      console.log("No authenticated user found in session");
       return res.status(401).json({ message: "Not authenticated" });
     }
   });
@@ -323,36 +347,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/users", async (req: Request, res: Response) => {
     try {
-      const validatedData = insertUserSchema.parse(req.body);
+      console.log("User registration request received");
       
-      // Check if user already exists
-      const existingUser = await storage.getUserByUsername(validatedData.username);
-      if (existingUser) {
-        return res.status(409).json({ message: "Username already exists" });
-      }
-      
-      const newUser = await storage.createUser(validatedData);
-      
-      // Also log the user in after registration by setting up the session
-      if (req.session) {
-        const { password: _, ...userWithoutPassword } = newUser;
-        const userData = {
-          ...userWithoutPassword,
-          isAdmin: newUser.username === 'crystalgamer77',
-          isOwner: newUser.username === 'crystalgamer77',
-        };
+      try {
+        const validatedData = insertUserSchema.parse(req.body);
+        console.log(`Validation passed for username: ${validatedData.username}`);
         
-        req.session.user = userData as User;
-        req.session.userId = newUser.id;
-        req.session.isAuthenticated = true;
+        // Check if user already exists
+        const existingUser = await storage.getUserByUsername(validatedData.username);
+        if (existingUser) {
+          console.log(`Registration failed: Username ${validatedData.username} already exists`);
+          return res.status(409).json({ message: "Username already exists" });
+        }
+        
+        console.log("Creating new user");
+        const newUser = await storage.createUser(validatedData);
+        console.log(`User created with ID: ${newUser.id}`);
+        
+        // Also log the user in after registration by setting up the session
+        if (req.session) {
+          console.log("Setting up session for new user");
+          const { password: _, ...userWithoutPassword } = newUser;
+          const userData = {
+            ...userWithoutPassword,
+            isAdmin: newUser.username === 'crystalgamer77',
+            isOwner: newUser.username === 'crystalgamer77',
+          };
+          
+          req.session.user = userData as User;
+          req.session.userId = newUser.id;
+          req.session.isAuthenticated = true;
+          console.log(`Session created for new user ID: ${newUser.id}`);
+        } else {
+          console.log("Warning: No session object available for new user");
+        }
+        
+        // Don't include password in the response
+        const { password: _, ...userResponse } = newUser;
+        console.log("Registration successful");
+        res.status(201).json(userResponse);
+      } catch (validationError) {
+        if (validationError instanceof z.ZodError) {
+          console.log("Validation failed:", validationError.errors);
+          return res.status(400).json({ 
+            message: "Invalid user data", 
+            errors: validationError.errors 
+          });
+        }
+        throw validationError;
       }
-      
-      res.status(201).json(newUser);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid user data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create user" });
+      console.error("Registration error:", error);
+      res.status(500).json({ 
+        message: "Failed to create user", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
     }
   });
 
