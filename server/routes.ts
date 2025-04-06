@@ -248,7 +248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password: _, ...userWithoutPassword } = user;
       const userData = {
         ...userWithoutPassword,
-        isAdmin: user.username === 'crystalgamer77',
+        isAdmin: user.username === 'crystalgamer77' || user.username === 'admin',
         isOwner: user.username === 'crystalgamer77',
       };
 
@@ -334,7 +334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.session) {
         req.session.user = {
           ...userData,
-          isAdmin: userData.username === 'crystalgamer77',
+          isAdmin: userData.username === 'crystalgamer77' || userData.username === 'admin',
           isOwner: userData.username === 'crystalgamer77',
         } as User;
       }
@@ -370,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const { password: _, ...userWithoutPassword } = newUser;
           const userData = {
             ...userWithoutPassword,
-            isAdmin: newUser.username === 'crystalgamer77',
+            isAdmin: newUser.username === 'crystalgamer77' || newUser.username === 'admin',
             isOwner: newUser.username === 'crystalgamer77',
           };
           
