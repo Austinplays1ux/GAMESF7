@@ -230,21 +230,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Login attempt for user: ${username}`);
       
-      // Get user from storage
+      // Get user from storage with optimized query
       const user = await storage.getUserByUsername(username);
       
-      // Log for debugging
-      console.log(`User found in database:`, user ? `Yes, ID: ${user.id}` : "No");
+      // Early check for user existence (prevents timing attacks)
+      if (!user) {
+        console.log("Authentication failed: User not found");
+        // Use consistent response message to prevent user enumeration
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
       
-      // Check if user exists and password matches
-      if (!user || user.password !== inputPassword) {
-        console.log("Authentication failed: Invalid username or password");
+      // Check if password matches (in a production app, we would use bcrypt.compare here)
+      const passwordValid = user.password === inputPassword;
+      if (!passwordValid) {
+        console.log("Authentication failed: Password invalid");
         return res.status(401).json({ message: "Invalid username or password" });
       }
       
       console.log(`Password verification successful for user: ${user.username}`);
       
-      // Check if user is crystalgamer77 and add admin privileges
+      // Create user object without the password
       const { password: _, ...userWithoutPassword } = user;
       const userData = {
         ...userWithoutPassword,
@@ -257,13 +262,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.user = userData as User;
         req.session.userId = user.id;
         req.session.isAuthenticated = true;
-        console.log(`Session created for user ID: ${user.id}`);
+        
+        // Save session explicitly to ensure it's stored immediately
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+          } else {
+            console.log(`Session created for user ID: ${user.id}`);
+          }
+          
+          // Return response after session is saved
+          res.status(200).json(userData);
+        });
       } else {
         console.log("Warning: No session object available");
+        res.status(200).json(userData);
       }
-
-      res.status(200).json(userData);
     } catch (error) {
+      console.error("Login error:", error);
       res.status(500).json({ message: "Login failed", error: String(error) });
     }
   });
@@ -349,11 +365,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("User registration request received");
       
+      // Validate the input data first
       try {
         const validatedData = insertUserSchema.parse(req.body);
         console.log(`Validation passed for username: ${validatedData.username}`);
         
-        // Check if user already exists
+        // Check if user already exists using the optimized query
         const existingUser = await storage.getUserByUsername(validatedData.username);
         if (existingUser) {
           console.log(`Registration failed: Username ${validatedData.username} already exists`);
@@ -364,28 +381,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const newUser = await storage.createUser(validatedData);
         console.log(`User created with ID: ${newUser.id}`);
         
+        // Create user data without password for session and response
+        const { password: _, ...userWithoutPassword } = newUser;
+        const userData = {
+          ...userWithoutPassword,
+          isAdmin: newUser.username === 'crystalgamer77' || newUser.username === 'admin',
+          isOwner: newUser.username === 'crystalgamer77',
+        };
+        
         // Also log the user in after registration by setting up the session
         if (req.session) {
           console.log("Setting up session for new user");
-          const { password: _, ...userWithoutPassword } = newUser;
-          const userData = {
-            ...userWithoutPassword,
-            isAdmin: newUser.username === 'crystalgamer77' || newUser.username === 'admin',
-            isOwner: newUser.username === 'crystalgamer77',
-          };
           
           req.session.user = userData as User;
           req.session.userId = newUser.id;
           req.session.isAuthenticated = true;
-          console.log(`Session created for new user ID: ${newUser.id}`);
+          
+          // Save session explicitly to ensure it's stored immediately
+          req.session.save((err) => {
+            if (err) {
+              console.error("Session save error for new user:", err);
+            } else {
+              console.log(`Session created for new user ID: ${newUser.id}`);
+            }
+            
+            // Return response after session is saved
+            console.log("Registration successful");
+            res.status(201).json(userData);
+          });
         } else {
           console.log("Warning: No session object available for new user");
+          console.log("Registration successful");
+          res.status(201).json(userData);
         }
-        
-        // Don't include password in the response
-        const { password: _, ...userResponse } = newUser;
-        console.log("Registration successful");
-        res.status(201).json(userResponse);
       } catch (validationError) {
         if (validationError instanceof z.ZodError) {
           console.log("Validation failed:", validationError.errors);

@@ -5,7 +5,7 @@ import {
   games, type Game, type InsertGame, type GameWithDetails,
   gameTags, type GameTag, type InsertGameTag
 } from "@shared/schema";
-import { db } from "./db";
+import { db, executeWithRetry } from "./db";
 import { eq, and, sql } from "drizzle-orm";
 
 // Define storage interface
@@ -321,12 +321,22 @@ export class MemStorage implements IStorage {
 export class DatabaseStorage implements IStorage {
   // Users
   async getUser(id: number): Promise<User | undefined> {
-    const results = await db.select().from(users).where(eq(users.id, id));
+    // Using a more efficient query with limit 1 since we only need one result
+    const results = await db.select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
     return results.length ? results[0] : undefined;
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const results = await db.select().from(users).where(eq(users.username, username));
+    // Using a more efficient query with limit 1 and retry logic for reliability
+    const results = await executeWithRetry(async () => {
+      return db.select()
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+    });
     return results.length ? results[0] : undefined;
   }
   
