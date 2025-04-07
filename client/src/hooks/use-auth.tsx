@@ -36,6 +36,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = async () => {
     console.log("Refreshing user session state");
     try {
+      // First, check localStorage for a logged in user
+      const localStorageUser = localStorage.getItem('currentUser');
+      if (localStorageUser) {
+        try {
+          const userData = JSON.parse(localStorageUser);
+          console.log("User found in localStorage:", userData.username);
+          setUser(userData);
+          return userData;
+        } catch (e) {
+          console.error("Error parsing user from localStorage:", e);
+          localStorage.removeItem('currentUser');
+        }
+      }
+      
+      // Fallback to API request if no localStorage user
       const userData = await apiRequest<User>("/api/user");
       console.log("User session data received:", userData ? "authenticated" : "unauthenticated");
       if (userData) {
@@ -158,9 +173,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      await apiRequest("/api/logout", {
-        method: "POST"
-      });
+      // Remove user from localStorage
+      localStorage.removeItem('currentUser');
+      
+      // Also try the API logout to clean up server-side session
+      try {
+        await apiRequest("/api/logout", {
+          method: "POST"
+        });
+      } catch (e) {
+        console.log("API logout failed, but continuing with client-side logout");
+      }
       
       console.log("Logout successful");
       setUser(null);
