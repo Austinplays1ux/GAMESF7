@@ -77,7 +77,7 @@ const GameDetailModal: React.FC<GameDetailModalProps> = ({
             <div className="flex space-x-2">
               <span className="flex items-center text-yellow-400">
                 <i className="fas fa-star mr-1"></i>
-                <span>{game.rating / 10}</span>
+                <span>{game.rating}</span>
               </span>
               <span className="text-gray-400">|</span>
               <span className="text-gray-400">{formattedPlayCount} plays</span>

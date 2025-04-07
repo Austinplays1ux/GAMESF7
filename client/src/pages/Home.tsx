@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -7,27 +7,36 @@ import { Skeleton } from "@/components/ui/skeleton";
 import GameDetailModal from "@/components/GameDetailModal";
 import GamePlayModal from "@/components/GamePlayModal";
 import GameCardSection from "@/components/GameCardSection";
+import { 
+  mockGameDetails, 
+  mockFeaturedGames, 
+  mockRecommendedGames,
+  mockRobloxGames,
+  mockFortniteGames,
+  mockRecroomGames
+} from "@/mockData";
 
 const Home: React.FC = () => {
   const [, navigate] = useLocation();
   const [selectedGame, setSelectedGame] = useState<GameWithDetails | null>(null);
   const [isGameDetailOpen, setIsGameDetailOpen] = useState(false);
   const [isGamePlayOpen, setIsGamePlayOpen] = useState(false);
-
-  // Query for featured games
-  const { data: featuredGames = [], isLoading: isLoadingFeatured } = useQuery<GameWithDetails[]>({
-    queryKey: ["/api/games/featured"],
-  });
-
-  // Query for recommended games
-  const { data: recommendedGames = [], isLoading: isLoadingRecommended } = useQuery<GameWithDetails[]>({
-    queryKey: ["/api/games/recommended"],
-  });
-
-  // Query for all games
-  const { data: allGames = [], isLoading: isLoadingAll } = useQuery<GameWithDetails[]>({
-    queryKey: ["/api/games"],
-  });
+  
+  // Local state for games data
+  const [featuredGames, setFeaturedGames] = useState<GameWithDetails[]>([]);
+  const [recommendedGames, setRecommendedGames] = useState<GameWithDetails[]>([]);
+  const [allGames, setAllGames] = useState<GameWithDetails[]>([]);
+  const [robloxGames, setRobloxGames] = useState<GameWithDetails[]>([]);
+  const [fortniteGames, setFortniteGames] = useState<GameWithDetails[]>([]);
+  const [recroomGames, setRecroomGames] = useState<GameWithDetails[]>([]);
+  
+  // Loading states
+  const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
+  const [isLoadingRecommended, setIsLoadingRecommended] = useState(true);
+  const [isLoadingAll, setIsLoadingAll] = useState(true);
+  const [isLoadingRoblox, setIsLoadingRoblox] = useState(true);
+  const [isLoadingFortnite, setIsLoadingFortnite] = useState(true);
+  const [isLoadingRecroom, setIsLoadingRecroom] = useState(true);
   
   // Platform IDs (based on database order)
   const HTML_PLATFORM_ID = 1;
@@ -35,20 +44,59 @@ const Home: React.FC = () => {
   const FORTNITE_PLATFORM_ID = 3;
   const RECROOM_PLATFORM_ID = 4;
   
-  // Query for Roblox games
-  const { data: robloxGames = [], isLoading: isLoadingRoblox } = useQuery<GameWithDetails[]>({
-    queryKey: ['/api/games', { platformId: ROBLOX_PLATFORM_ID }],
-  });
-  
-  // Query for Fortnite games
-  const { data: fortniteGames = [], isLoading: isLoadingFortnite } = useQuery<GameWithDetails[]>({
-    queryKey: ['/api/games', { platformId: FORTNITE_PLATFORM_ID }],
-  });
-  
-  // Query for RecRoom games
-  const { data: recroomGames = [], isLoading: isLoadingRecroom } = useQuery<GameWithDetails[]>({
-    queryKey: ['/api/games', { platformId: RECROOM_PLATFORM_ID }],
-  });
+  // Load mock data with a slight delay to simulate API calls
+  useEffect(() => {
+    // Try API first, then use mock data as fallback after a short delay
+    const fetchDataWithFallback = async () => {
+      try {
+        // Try fetching from API first
+        const featuredResponse = await fetch('/api/games/featured');
+        const recommendedResponse = await fetch('/api/games/recommended');
+        const allGamesResponse = await fetch('/api/games');
+        const robloxResponse = await fetch(`/api/games?platformId=${ROBLOX_PLATFORM_ID}`);
+        const fortniteResponse = await fetch(`/api/games?platformId=${FORTNITE_PLATFORM_ID}`);
+        const recroomResponse = await fetch(`/api/games?platformId=${RECROOM_PLATFORM_ID}`);
+        
+        // If all API calls succeed, use the real data
+        if (featuredResponse.ok && recommendedResponse.ok && allGamesResponse.ok &&
+            robloxResponse.ok && fortniteResponse.ok && recroomResponse.ok) {
+          setFeaturedGames(await featuredResponse.json());
+          setRecommendedGames(await recommendedResponse.json());
+          setAllGames(await allGamesResponse.json());
+          setRobloxGames(await robloxResponse.json());
+          setFortniteGames(await fortniteResponse.json());
+          setRecroomGames(await recroomResponse.json());
+        } else {
+          // If any API fails, use mock data
+          throw new Error("API call failed");
+        }
+      } catch (error) {
+        console.log("Using mock data due to API errors:", error);
+        
+        // Use mock data with slight delay to simulate network request
+        setTimeout(() => {
+          setFeaturedGames(mockFeaturedGames);
+          setRecommendedGames(mockRecommendedGames);
+          setAllGames(mockGameDetails);
+          setRobloxGames(mockRobloxGames);
+          setFortniteGames(mockFortniteGames);
+          setRecroomGames(mockRecroomGames);
+        }, 500);
+      } finally {
+        // Hide loaders after a short delay to prevent flickering
+        setTimeout(() => {
+          setIsLoadingFeatured(false);
+          setIsLoadingRecommended(false);
+          setIsLoadingAll(false);
+          setIsLoadingRoblox(false);
+          setIsLoadingFortnite(false);
+          setIsLoadingRecroom(false);
+        }, 800);
+      }
+    };
+    
+    fetchDataWithFallback();
+  }, []);
 
   const handleOpenGameDetail = (game: GameWithDetails) => {
     setSelectedGame(game);
