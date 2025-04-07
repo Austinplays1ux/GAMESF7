@@ -47,7 +47,16 @@ type LobbyInfoMessage = {
   timestamp: number;
 };
 
-type WebSocketMessage = ChatMessage | UserJoinedMessage | UserLeftMessage | LobbyInfoMessage;
+type TypingMessage = {
+  type: 'typing';
+  userId: number;
+  username: string;
+  isTyping: boolean;
+  preview?: string;
+  timestamp: number;
+};
+
+type WebSocketMessage = ChatMessage | UserJoinedMessage | UserLeftMessage | LobbyInfoMessage | TypingMessage;
 
 // User connection mapping
 interface ConnectedUser {
@@ -128,6 +137,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Broadcast to all users
           broadcast(chatMessage);
+          return;
+        }
+        
+        // Handle typing status messages
+        if (data.type === 'typing') {
+          const typingMessage: TypingMessage = {
+            type: 'typing',
+            userId,
+            username,
+            isTyping: data.isTyping,
+            preview: data.preview || '',
+            timestamp: Date.now()
+          };
+          
+          // Broadcast typing status to all users
+          broadcast(typingMessage);
           return;
         }
       } catch (error) {

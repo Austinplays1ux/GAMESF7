@@ -33,11 +33,22 @@ type LobbyInfoMessage = {
   timestamp: number;
 };
 
-export type WebSocketMessage = ChatMessage | UserJoinedMessage | UserLeftMessage | LobbyInfoMessage;
+export type TypingMessage = {
+  type: 'typing';
+  userId: number;
+  username: string;
+  isTyping: boolean;
+  preview?: string;
+  timestamp: number;
+};
+
+type WebSocketMessage = ChatMessage | UserJoinedMessage | UserLeftMessage | LobbyInfoMessage | TypingMessage;
 
 export type ConnectedUser = {
   userId: number;
   username: string;
+  isTyping?: boolean;
+  typingPreview?: string;
 };
 
 export function useWebSocket() {
@@ -107,6 +118,21 @@ export function useWebSocket() {
         else if (message.type === 'user_left') {
           setUsers(prev => prev.filter(u => u.userId !== message.userId));
         }
+        // Update typing status
+        else if (message.type === 'typing') {
+          setUsers(prev => {
+            return prev.map(u => {
+              if (u.userId === message.userId) {
+                return { 
+                  ...u, 
+                  isTyping: message.isTyping, 
+                  typingPreview: message.preview 
+                };
+              }
+              return u;
+            });
+          });
+        }
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);
       }
@@ -141,6 +167,29 @@ export function useWebSocket() {
       };
       
       socket.send(JSON.stringify(chatMessage));
+      
+      // When a message is sent, also send a typing status of false
+      const typingMessage = {
+        type: 'typing',
+        isTyping: false
+      };
+      socket.send(JSON.stringify(typingMessage));
+      
+      return true;
+    }
+    return false;
+  }, [socket, user]);
+  
+  // Function to send typing status
+  const sendTypingStatus = useCallback((isTyping: boolean, preview?: string) => {
+    if (socket && socket.readyState === WebSocket.OPEN && user) {
+      const typingMessage = {
+        type: 'typing',
+        isTyping,
+        preview: preview || ''
+      };
+      
+      socket.send(JSON.stringify(typingMessage));
       return true;
     }
     return false;
@@ -150,6 +199,7 @@ export function useWebSocket() {
     isConnected,
     messages,
     users,
-    sendMessage
+    sendMessage,
+    sendTypingStatus
   };
 }

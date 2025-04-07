@@ -3,13 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useWebSocket, WebSocketMessage } from '@/hooks/use-websocket';
+import { useWebSocket, ConnectedUser } from '@/hooks/use-websocket';
 import { useAuth } from '@/hooks/use-auth';
 import { formatDistanceToNow } from 'date-fns';
+import { debounce } from '@/lib/utils';
 
 export default function MultiplayerLobby() {
   const { user } = useAuth();
-  const { isConnected, messages, users, sendMessage } = useWebSocket();
+  const { isConnected, messages, users, sendMessage, sendTypingStatus } = useWebSocket();
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -18,9 +19,37 @@ export default function MultiplayerLobby() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
   
+  // Create a debounced function to send typing status
+  const debouncedSendTyping = useRef(
+    debounce((isTyping: boolean, preview?: string) => {
+      if (sendTypingStatus) {
+        sendTypingStatus(isTyping, preview);
+      }
+    }, 300)
+  ).current;
+  
+  // Handle input changes for typing indicator
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputMessage(newValue);
+    
+    // Send typing status with message preview
+    if (newValue.trim()) {
+      // Only send typing preview if longer than 2 chars
+      const preview = newValue.length > 2 ? newValue : undefined;
+      debouncedSendTyping(true, preview);
+    } else {
+      debouncedSendTyping(false);
+    }
+  };
+  
   const handleSendMessage = () => {
     if (inputMessage.trim() && sendMessage(inputMessage)) {
       setInputMessage('');
+      // Manually send typing=false status immediately
+      if (sendTypingStatus) {
+        sendTypingStatus(false);
+      }
     }
   };
   
@@ -46,13 +75,18 @@ export default function MultiplayerLobby() {
           <h3 className="font-medium text-lg mb-2">Online Users ({users.length})</h3>
           <ScrollArea className="h-[440px]">
             <div className="space-y-1">
-              {users.map(user => (
+              {users.map(u => (
                 <div 
-                  key={user.userId}
+                  key={u.userId}
                   className="flex items-center p-2 rounded-md hover:bg-zinc-700"
                 >
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span>{user.username}</span>
+                  <div className={`w-2 h-2 ${u.isTyping ? 'bg-blue-500 animate-pulse' : 'bg-green-500'} rounded-full mr-2`}></div>
+                  <div className="flex flex-col">
+                    <span>{u.username}</span>
+                    {u.isTyping && (
+                      <span className="text-xs text-blue-400">typing...</span>
+                    )}
+                  </div>
                 </div>
               ))}
               {users.length === 0 && (
@@ -129,21 +163,39 @@ export default function MultiplayerLobby() {
             </div>
           </ScrollArea>
           
-          <div className="p-3 border-t border-zinc-700 flex gap-2">
-            <Input
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
-              disabled={!isConnected}
-              className="flex-1"
-            />
-            <Button 
-              onClick={handleSendMessage}
-              disabled={!isConnected || !inputMessage.trim()}
-            >
-              Send
-            </Button>
+          <div className="p-3 border-t border-zinc-700 flex flex-col gap-2">
+            {/* Show typing indicators */}
+            <div className="h-6">
+              {users.some(u => u.isTyping && u.userId !== user.id) && (
+                <div className="text-xs text-zinc-400 animate-pulse">
+                  {users.filter(u => u.isTyping && u.userId !== user.id).map(u => (
+                    <div key={u.userId} className="flex items-center gap-1">
+                      <span className="font-medium">{u.username}</span> is typing
+                      {u.typingPreview && (
+                        <span className="italic text-zinc-500"> "{u.typingPreview}..."</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-2">
+              <Input
+                value={inputMessage}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Type a message..."
+                disabled={!isConnected}
+                className="flex-1"
+              />
+              <Button 
+                onClick={handleSendMessage}
+                disabled={!isConnected || !inputMessage.trim()}
+              >
+                Send
+              </Button>
+            </div>
           </div>
         </div>
       </div>
