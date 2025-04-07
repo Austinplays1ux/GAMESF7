@@ -6,8 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function BloxdIo() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const gameUrl = "https://bloxd.io";
-  const bloxdImageUrl = "/images/games/bloxd-io.png";
+  const gameUrl = "https//:bloxd.io";
+  const bloxdImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShT4ysT9elNLh_SVLehunOEyW31ELOHhmLXg&s";
 
   useEffect(() => {
     // Set timeout to simulate loading and improve iframe rendering experience
@@ -68,6 +68,8 @@ export default function BloxdIo() {
                 className="w-full h-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                 title="Bloxd.io"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                referrerPolicy="no-referrer"
               ></iframe>
             </div>
           )}

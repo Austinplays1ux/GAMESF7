@@ -79,7 +79,7 @@ export const mockGames: Game[] = [
     thumbnailUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShT4ysT9elNLh_SVLehunOEyW31ELOHhmLXg&s",
     platformId: 2,
     creatorId: 3,
-    gameUrl: "https://bloxd.io",
+    gameUrl: "https//:bloxd.io",
     isFeatured: true,
     plays: 15234,
     rating: 4.7,

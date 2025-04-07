@@ -117,7 +117,7 @@ export default function AdminPanel() {
                     <Card key={i} className="h-40 animate-pulse bg-gray-100 dark:bg-gray-800" />
                   ))
                 ) : (
-                  platforms.map((platform: Platform) => (
+                  platformsData.map((platform: Platform) => (
                     <Card key={platform.id} className="relative overflow-hidden border border-blue-100 dark:border-blue-900">
                       <div 
                         className="absolute top-0 left-0 w-full h-1" 
