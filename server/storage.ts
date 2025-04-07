@@ -5,7 +5,7 @@ import {
   games, type Game, type InsertGame, type GameWithDetails,
   gameTags, type GameTag, type InsertGameTag
 } from "@shared/schema";
-import { db, executeWithRetry } from "./db";
+import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
 
 // Define storage interface
@@ -330,14 +330,22 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
-    // Using a more efficient query with limit 1 and retry logic for reliability
-    const results = await executeWithRetry(async () => {
-      return db.select()
+    // Using a more efficient query with limit 1
+    try {
+      const results = await db.select()
         .from(users)
         .where(eq(users.username, username))
         .limit(1);
-    });
-    return results.length ? results[0] : undefined;
+      return results.length ? results[0] : undefined;
+    } catch (error) {
+      console.error("Error getting user by username:", error);
+      // Retry once on failure
+      const results = await db.select()
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+      return results.length ? results[0] : undefined;
+    }
   }
   
   async createUser(insertUser: InsertUser): Promise<User> {

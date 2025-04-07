@@ -1,5 +1,4 @@
 import { createContext, ReactNode, useContext, useState, useEffect } from "react";
-import { useMutation, UseQueryResult, useQuery } from "@tanstack/react-query";
 import { User } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +21,7 @@ type AuthContextType = {
   login: (data: LoginData) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -32,16 +32,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
 
+  // Function to fetch current user
+  const refreshUser = async () => {
+    console.log("Refreshing user session state");
+    try {
+      const userData = await apiRequest<User>("/api/user");
+      console.log("User session data received:", userData ? "authenticated" : "unauthenticated");
+      if (userData) {
+        setUser(userData);
+        return userData;
+      } else {
+        setUser(null);
+        return null;
+      }
+    } catch (error) {
+      console.log("Error refreshing user:", error);
+      // Don't show an error toast here - this is called on initial page load
+      setUser(null);
+      return null;
+    }
+  };
+
   // Check if user is logged in on component mount
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const userData = await apiRequest<User | null>("/api/user");
-        if (userData) {
-          setUser(userData);
-        }
+        await refreshUser();
       } catch (error) {
-        // User not logged in, don't show an error
+        console.log("Initial auth check failed:", error);
       } finally {
         setIsLoading(false);
       }
@@ -51,23 +69,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (credentials: LoginData) => {
+    console.log(`Login attempt for: ${credentials.username}`);
     setIsLoading(true);
     setError(null);
 
     try {
-      // Fixed the apiRequest call to match the function signature
       const userData = await apiRequest<User>("/api/login", {
         method: "POST",
         body: JSON.stringify(credentials)
       });
       
+      console.log("Login successful, user data received");
       setUser(userData);
       
       toast({
         title: "Login successful!",
         description: `Welcome back, ${userData.username}!`,
       });
+      
+      // Invalidate queries that might depend on auth state
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      
     } catch (error) {
+      console.error("Login error:", error);
       const errorMessage = error instanceof Error 
         ? error.message 
         : "An error occurred while logging in";
@@ -87,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (userData: RegisterData) => {
+    console.log(`Registration attempt for: ${userData.username}`);
     setIsLoading(true);
     setError(null);
 
@@ -96,13 +121,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(userData)
       });
       
+      console.log("Registration successful, user data received");
       setUser(newUser);
       
       toast({
         title: "Account created!",
         description: `Welcome to GAMESF7, ${newUser.username}!`,
       });
+      
+      // Invalidate queries that might depend on auth state
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      
     } catch (error) {
+      console.error("Registration error:", error);
       const errorMessage = error instanceof Error 
         ? error.message 
         : "An error occurred while creating your account";
@@ -122,6 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    console.log("Logout attempt");
     setIsLoading(true);
     setError(null);
 
@@ -130,13 +162,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: "POST"
       });
       
+      console.log("Logout successful");
       setUser(null);
       
       toast({
         title: "Logged out",
         description: "You have been successfully logged out.",
       });
+      
+      // Invalidate queries that might depend on auth state
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      
     } catch (error) {
+      console.error("Logout error:", error);
       const errorMessage = error instanceof Error 
         ? error.message 
         : "An error occurred while logging out";
@@ -161,7 +199,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error,
         login,
         logout,
-        register
+        register,
+        refreshUser
       }}
     >
       {children}
