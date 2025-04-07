@@ -65,8 +65,18 @@ export default function BloxdIo() {
                 id="bloxd-iframe"
                 src={gameUrl}
                 className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; cross-origin-isolated"
+                sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-downloads"
+                referrerPolicy="no-referrer"
                 title="Bloxd.io"
+                onError={(e) => {
+                  console.error("Failed to load Bloxd.io:", e);
+                  setIsLoading(true);
+                  // Attempt to reload
+                  if (e.currentTarget) {
+                    e.currentTarget.src = gameUrl;
+                  }
+                }}
               ></iframe>
             </div>
           )}
