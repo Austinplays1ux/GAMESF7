@@ -71,11 +71,6 @@ const AppHeader: React.FC = () => {
                   <i className="fas fa-users mr-2"></i> Multiplayer
                 </div>
               </Link>
-              <Link href="/games/bloxd-io">
-                <div className={`text-white sofia-pro flex items-center hover:text-gray-300 transition-colors ${location === '/games/bloxd-io' ? 'font-medium' : ''}`}>
-                  <i className="fas fa-cube mr-2"></i> Bloxd.io
-                </div>
-              </Link>
               <div className="text-white sofia-pro flex items-center hover:text-gray-300 cursor-pointer transition-colors">
                 <i className="fas fa-coins mr-2"></i> Currency
               </div>
@@ -201,11 +196,6 @@ const AppHeader: React.FC = () => {
           <Link href="/multiplayer">
             <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
               <i className="fas fa-users mr-2"></i> Multiplayer
-            </div>
-          </Link>
-          <Link href="/games/bloxd-io">
-            <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
-              <i className="fas fa-cube mr-2"></i> Bloxd.io
             </div>
           </Link>
           <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
