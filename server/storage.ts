@@ -33,6 +33,7 @@ export interface IStorage {
   getGame(id: number): Promise<Game | undefined>;
   getGameByTitle(title: string): Promise<Game | undefined>;
   createGame(game: InsertGame): Promise<Game>;
+  updateGame(id: number, gameData: Partial<Game>): Promise<Game | undefined>;
   getFeaturedGames(): Promise<Game[]>;
   getRecommendedGames(): Promise<Game[]>;
   getGamesByPlatform(platformId: number): Promise<Game[]>;
@@ -262,6 +263,15 @@ export class MemStorage implements IStorage {
     return Array.from(this.games.values()).filter(game => game.platformId === platformId);
   }
   
+  async updateGame(id: number, gameData: Partial<Game>): Promise<Game | undefined> {
+    const game = await this.getGame(id);
+    if (!game) return undefined;
+    
+    const updatedGame = { ...game, ...gameData };
+    this.games.set(id, updatedGame);
+    return updatedGame;
+  }
+  
   async getGameDetails(gameId: number): Promise<GameWithDetails | undefined> {
     const game = await this.getGame(gameId);
     if (!game) return undefined;
@@ -458,6 +468,19 @@ export class DatabaseStorage implements IStorage {
   
   async getGamesByPlatform(platformId: number): Promise<Game[]> {
     return db.select().from(games).where(eq(games.platformId, platformId));
+  }
+  
+  async updateGame(id: number, gameData: Partial<Game>): Promise<Game | undefined> {
+    const game = await this.getGame(id);
+    if (!game) return undefined;
+    
+    const [updatedGame] = await db
+      .update(games)
+      .set(gameData)
+      .where(eq(games.id, id))
+      .returning();
+      
+    return updatedGame;
   }
   
   async getGameDetails(gameId: number): Promise<GameWithDetails | undefined> {

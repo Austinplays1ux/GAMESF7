@@ -3,15 +3,20 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Platform } from "../../../index";
+import { Input } from "@/components/ui/input";
+import { Platform, GameWithDetails } from "../../../index";
 import PlatformEditModal from "./PlatformEditModal";
+import GameEditModal from "./GameEditModal";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil } from "lucide-react";
+import { Pencil, Search } from "lucide-react";
 
 export default function AdminPanel() {
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPlatformEditModalOpen, setIsPlatformEditModalOpen] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<GameWithDetails | null>(null);
+  const [isGameEditModalOpen, setIsGameEditModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -34,10 +39,29 @@ export default function AdminPanel() {
     queryKey: ['/api/platforms'],
   });
 
+  // Fetch games
+  const { data: games = [], isLoading: isLoadingGames } = useQuery<GameWithDetails[]>({
+    queryKey: ['/api/games'],
+  });
+
   const handleEditPlatform = (platform: Platform) => {
     setSelectedPlatform(platform);
-    setIsEditModalOpen(true);
+    setIsPlatformEditModalOpen(true);
   };
+
+  const handleEditGame = (game: GameWithDetails) => {
+    setSelectedGame(game);
+    setIsGameEditModalOpen(true);
+  };
+
+  // Filter games based on search query
+  const filteredGames = searchQuery 
+    ? games.filter(game => 
+        game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        game.platform.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        game.creator.username.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : games;
 
   return (
     <div className="container mx-auto p-4 max-w-6xl">
@@ -45,13 +69,14 @@ export default function AdminPanel() {
         <CardHeader>
           <CardTitle>Admin Panel</CardTitle>
           <CardDescription>
-            Manage your platforms, categories, and more.
+            Manage your platforms, games, categories, and more.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="platforms">
             <TabsList className="mb-4">
               <TabsTrigger value="platforms">Platforms</TabsTrigger>
+              <TabsTrigger value="games">Games</TabsTrigger>
               <TabsTrigger value="categories">Categories</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="reports">Reports</TabsTrigger>
@@ -105,6 +130,98 @@ export default function AdminPanel() {
               </div>
             </TabsContent>
             
+            <TabsContent value="games">
+              <div className="mb-4">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <Input
+                    type="search"
+                    placeholder="Search games by title, platform or creator..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b dark:border-gray-700">
+                      <th className="px-4 py-2 text-left">Thumbnail</th>
+                      <th className="px-4 py-2 text-left">Title</th>
+                      <th className="px-4 py-2 text-left">Platform</th>
+                      <th className="px-4 py-2 text-left">Creator</th>
+                      <th className="px-4 py-2 text-left">Plays</th>
+                      <th className="px-4 py-2 text-left">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {isLoadingGames ? (
+                      Array(5).fill(0).map((_, i) => (
+                        <tr key={i} className="border-b dark:border-gray-700">
+                          <td colSpan={6} className="px-4 py-4">
+                            <div className="h-10 animate-pulse bg-gray-100 dark:bg-gray-800 rounded" />
+                          </td>
+                        </tr>
+                      ))
+                    ) : filteredGames.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-4 text-center text-gray-500">
+                          No games found matching your search criteria.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredGames.map((game) => (
+                        <tr key={game.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="px-4 py-2">
+                            <div className="w-16 h-9 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
+                              <img
+                                src={game.thumbnailUrl}
+                                alt={game.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = "https://placehold.co/160x90?text=No+Image";
+                                }}
+                              />
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 font-medium">{game.title}</td>
+                          <td className="px-4 py-2">
+                            <div className="flex items-center gap-1.5">
+                              {game.platform.icon.startsWith('fa') ? (
+                                <i className={`${game.platform.icon} text-sm`} style={{ color: game.platform.color }}></i>
+                              ) : (
+                                <img
+                                  src={game.platform.icon}
+                                  alt={game.platform.name}
+                                  className="w-4 h-4 object-contain"
+                                />
+                              )}
+                              <span>{game.platform.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-2">{game.creator.username}</td>
+                          <td className="px-4 py-2">{game.plays}</td>
+                          <td className="px-4 py-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditGame(game)}
+                              className="flex items-center gap-1 h-8"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              <span>Edit</span>
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+            
             <TabsContent value="categories">
               <p>Category management coming soon.</p>
             </TabsContent>
@@ -120,11 +237,19 @@ export default function AdminPanel() {
         </CardContent>
       </Card>
 
-      {isEditModalOpen && (
+      {isPlatformEditModalOpen && (
         <PlatformEditModal 
           platform={selectedPlatform} 
-          isOpen={isEditModalOpen} 
-          onClose={() => setIsEditModalOpen(false)} 
+          isOpen={isPlatformEditModalOpen} 
+          onClose={() => setIsPlatformEditModalOpen(false)} 
+        />
+      )}
+      
+      {isGameEditModalOpen && (
+        <GameEditModal
+          game={selectedGame}
+          isOpen={isGameEditModalOpen}
+          onClose={() => setIsGameEditModalOpen(false)}
         />
       )}
     </div>

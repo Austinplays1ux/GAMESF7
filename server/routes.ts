@@ -422,6 +422,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to record game play" });
     }
   });
+  
+  app.patch("/api/games/:id", async (req: Request, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const { thumbnailUrl } = req.body;
+      
+      // Check that the current user is admin (only admins can update games)
+      if (!(req.session && req.session.user && req.session.user.isAdmin)) {
+        return res.status(403).json({ message: "Not authorized to update game" });
+      }
+      
+      const game = await storage.getGame(id);
+      if (!game) {
+        return res.status(404).json({ message: "Game not found" });
+      }
+      
+      const updatedGame = await storage.updateGame(id, { thumbnailUrl });
+      if (!updatedGame) {
+        return res.status(404).json({ message: "Game not found" });
+      }
+      
+      res.json(updatedGame);
+    } catch (error) {
+      console.error("Failed to update game thumbnail:", error);
+      res.status(500).json({ message: "Failed to update game thumbnail" });
+    }
+  });
 
   app.get("/api/users/:id", async (req: Request, res: Response) => {
     try {
