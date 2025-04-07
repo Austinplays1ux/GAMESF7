@@ -4,6 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertGameSchema, insertGameTagSchema, type GameWithDetails, User } from "@shared/schema";
 import { z } from "zod";
+import { WebSocketServer, WebSocket } from "ws";
 
 // Type augmentation for Express Request to include session user
 declare module "express-session" {
@@ -12,6 +13,47 @@ declare module "express-session" {
     userId: number;
     isAuthenticated: boolean;
   }
+}
+
+// Define message types for the multiplayer lobby
+type ChatMessage = {
+  type: 'chat';
+  userId: number;
+  username: string;
+  message: string;
+  timestamp: number;
+};
+
+type UserJoinedMessage = {
+  type: 'user_joined';
+  userId: number;
+  username: string;
+  timestamp: number;
+};
+
+type UserLeftMessage = {
+  type: 'user_left';
+  userId: number;
+  username: string;
+  timestamp: number;
+};
+
+type LobbyInfoMessage = {
+  type: 'lobby_info';
+  users: Array<{
+    userId: number;
+    username: string;
+  }>;
+  timestamp: number;
+};
+
+type WebSocketMessage = ChatMessage | UserJoinedMessage | UserLeftMessage | LobbyInfoMessage;
+
+// User connection mapping
+interface ConnectedUser {
+  userId: number;
+  username: string;
+  connection: WebSocket;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
