@@ -12,6 +12,7 @@ import GamePlayer from "@/pages/GamePlayer";
 import Settings from "@/pages/Settings";
 import MyGames from "@/pages/MyGames";
 import Admin from "@/pages/Admin";
+import Multiplayer from "@/pages/Multiplayer";
 import AppHeader from "@/components/AppHeader";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -41,6 +42,7 @@ function Router() {
           <ProtectedRoute path="/settings" component={Settings} />
           <ProtectedRoute path="/my-games" component={MyGames} />
           <ProtectedRoute path="/admin" component={Admin} />
+          <ProtectedRoute path="/multiplayer" component={Multiplayer} />
           <Route path="*" component={NotFound} />
         </Switch>
       </div>

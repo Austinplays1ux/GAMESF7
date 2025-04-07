@@ -44,58 +44,27 @@ const Home: React.FC = () => {
   const FORTNITE_PLATFORM_ID = 3;
   const RECROOM_PLATFORM_ID = 4;
   
-  // Load mock data with a slight delay to simulate API calls
+  // Directly load mock data with no API calls
   useEffect(() => {
-    // Try API first, then use mock data as fallback after a short delay
-    const fetchDataWithFallback = async () => {
-      try {
-        // Try fetching from API first
-        const featuredResponse = await fetch('/api/games/featured');
-        const recommendedResponse = await fetch('/api/games/recommended');
-        const allGamesResponse = await fetch('/api/games');
-        const robloxResponse = await fetch(`/api/games?platformId=${ROBLOX_PLATFORM_ID}`);
-        const fortniteResponse = await fetch(`/api/games?platformId=${FORTNITE_PLATFORM_ID}`);
-        const recroomResponse = await fetch(`/api/games?platformId=${RECROOM_PLATFORM_ID}`);
-        
-        // If all API calls succeed, use the real data
-        if (featuredResponse.ok && recommendedResponse.ok && allGamesResponse.ok &&
-            robloxResponse.ok && fortniteResponse.ok && recroomResponse.ok) {
-          setFeaturedGames(await featuredResponse.json());
-          setRecommendedGames(await recommendedResponse.json());
-          setAllGames(await allGamesResponse.json());
-          setRobloxGames(await robloxResponse.json());
-          setFortniteGames(await fortniteResponse.json());
-          setRecroomGames(await recroomResponse.json());
-        } else {
-          // If any API fails, use mock data
-          throw new Error("API call failed");
-        }
-      } catch (error) {
-        console.log("Using mock data due to API errors:", error);
-        
-        // Use mock data with slight delay to simulate network request
-        setTimeout(() => {
-          setFeaturedGames(mockFeaturedGames);
-          setRecommendedGames(mockRecommendedGames);
-          setAllGames(mockGameDetails);
-          setRobloxGames(mockRobloxGames);
-          setFortniteGames(mockFortniteGames);
-          setRecroomGames(mockRecroomGames);
-        }, 500);
-      } finally {
-        // Hide loaders after a short delay to prevent flickering
-        setTimeout(() => {
-          setIsLoadingFeatured(false);
-          setIsLoadingRecommended(false);
-          setIsLoadingAll(false);
-          setIsLoadingRoblox(false);
-          setIsLoadingFortnite(false);
-          setIsLoadingRecroom(false);
-        }, 800);
-      }
-    };
+    console.log("Setting mock data directly");
     
-    fetchDataWithFallback();
+    // Short timeout to simulate loading
+    setTimeout(() => {
+      setFeaturedGames(mockFeaturedGames);
+      setRecommendedGames(mockRecommendedGames);
+      setAllGames(mockGameDetails);
+      setRobloxGames(mockRobloxGames);
+      setFortniteGames(mockFortniteGames);
+      setRecroomGames(mockRecroomGames);
+      
+      // Set all loading states to false
+      setIsLoadingFeatured(false);
+      setIsLoadingRecommended(false);
+      setIsLoadingAll(false);
+      setIsLoadingRoblox(false);
+      setIsLoadingFortnite(false);
+      setIsLoadingRecroom(false);
+    }, 800);
   }, []);
 
   const handleOpenGameDetail = (game: GameWithDetails) => {

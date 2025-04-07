@@ -51,7 +51,7 @@ const GameCardSection = ({
             </div>
           ))}
         </div>
-      ) : games.length > 0 ? (
+      ) : (games && games.length > 0) ? (
         <div className="flex flex-wrap gap-4">
           {games.slice(0, maxDisplay).map((game) => (
             <div
@@ -61,9 +61,14 @@ const GameCardSection = ({
             >
               <div className="relative">
                 <img
-                  src={game.thumbnailUrl}
+                  src={game.thumbnailUrl || `https://placehold.co/400x225/8833FF/FFFFFF?text=${encodeURIComponent(game.title)}`}
                   alt={game.title}
                   className="w-full h-36 object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.src = `https://placehold.co/400x225/8833FF/FFFFFF?text=${encodeURIComponent(game.title)}`;
+                  }}
                 />
                 <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
                   <p className="text-white text-xl font-bold">{game.title}</p>
@@ -84,6 +89,11 @@ const GameCardSection = ({
                   src={game.thumbnailUrl}
                   alt={game.title}
                   className="w-full h-36 object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.src = `https://placehold.co/400x225/8833FF/FFFFFF?text=${encodeURIComponent(game.title)}`;
+                  }}
                 />
                 <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
                   <p className="text-white text-xl font-bold">{game.title}</p>

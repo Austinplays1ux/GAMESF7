@@ -58,6 +58,113 @@ interface ConnectedUser {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+  
+  // Create WebSocket server - use a unique path to avoid conflict with Vite's HMR websocket
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Store connected users
+  const connectedUsers: Map<number, ConnectedUser> = new Map();
+  
+  wss.on('connection', (ws: WebSocket) => {
+    console.log('New WebSocket connection established');
+    let userId: number = 0;
+    let username: string = 'Guest';
+    
+    ws.on('message', (message: string) => {
+      try {
+        const data = JSON.parse(message);
+        
+        // Handle authentication message
+        if (data.type === 'auth') {
+          userId = data.userId || 0;
+          username = data.username || 'Guest';
+          
+          // Store the connection
+          connectedUsers.set(userId, {
+            userId,
+            username,
+            connection: ws
+          });
+          
+          console.log(`User authenticated: ${username} (ID: ${userId})`);
+          
+          // Broadcast user joined message
+          const joinMessage: UserJoinedMessage = {
+            type: 'user_joined',
+            userId,
+            username,
+            timestamp: Date.now()
+          };
+          
+          // Send lobby info to the user who just joined
+          const lobbyUsers = Array.from(connectedUsers.values()).map(user => ({
+            userId: user.userId,
+            username: user.username
+          }));
+          
+          const lobbyInfo: LobbyInfoMessage = {
+            type: 'lobby_info',
+            users: lobbyUsers,
+            timestamp: Date.now()
+          };
+          
+          ws.send(JSON.stringify(lobbyInfo));
+          
+          // Broadcast join message to all users
+          broadcast(joinMessage);
+          
+          return;
+        }
+        
+        // Handle chat messages
+        if (data.type === 'chat' && data.message) {
+          const chatMessage: ChatMessage = {
+            type: 'chat',
+            userId,
+            username,
+            message: data.message,
+            timestamp: Date.now()
+          };
+          
+          // Broadcast to all users
+          broadcast(chatMessage);
+          return;
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    });
+    
+    // Handle disconnection
+    ws.on('close', () => {
+      if (userId) {
+        connectedUsers.delete(userId);
+        
+        // Broadcast user left message
+        const leftMessage: UserLeftMessage = {
+          type: 'user_left',
+          userId,
+          username,
+          timestamp: Date.now()
+        };
+        
+        broadcast(leftMessage);
+        
+        console.log(`User disconnected: ${username} (ID: ${userId})`);
+      }
+    });
+    
+    // Function to broadcast messages to all connected clients
+    function broadcast(message: WebSocketMessage) {
+      const messageStr = JSON.stringify(message);
+      
+      wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(messageStr);
+        }
+      });
+    }
+  });
 
   // API routes
   app.post("/api/games", async (req: Request, res: Response) => {
