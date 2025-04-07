@@ -42,7 +42,13 @@ export type TypingMessage = {
   timestamp: number;
 };
 
-type WebSocketMessage = ChatMessage | UserJoinedMessage | UserLeftMessage | LobbyInfoMessage | TypingMessage;
+type ResetMessagesMessage = {
+  type: 'reset_messages';
+  timestamp: number;
+  message: string;
+};
+
+type WebSocketMessage = ChatMessage | UserJoinedMessage | UserLeftMessage | LobbyInfoMessage | TypingMessage | ResetMessagesMessage;
 
 export type ConnectedUser = {
   userId: number;
@@ -93,12 +99,19 @@ export function useWebSocket() {
         const message = JSON.parse(event.data) as WebSocketMessage;
         console.log('WebSocket message received:', message);
         
-        // Update the messages state
-        setMessages(prev => {
-          const updated = [...prev, message];
-          messagesRef.current = updated;
-          return updated;
-        });
+        // Handle reset messages specially - clear all chat messages
+        if (message.type === 'reset_messages') {
+          // Keep only the reset message
+          setMessages([message]);
+          messagesRef.current = [message];
+        } else {
+          // For all other messages, append to the list
+          setMessages(prev => {
+            const updated = [...prev, message];
+            messagesRef.current = updated;
+            return updated;
+          });
+        }
         
         // Update users list for lobby info messages
         if (message.type === 'lobby_info') {

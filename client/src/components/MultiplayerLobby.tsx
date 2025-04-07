@@ -150,6 +150,12 @@ export default function MultiplayerLobby() {
                         : `${msg.username} left the lobby`}
                     </div>
                   )}
+                  
+                  {msg.type === 'reset_messages' && (
+                    <div className="text-center text-xs bg-blue-900/30 text-blue-300 py-2 px-4 rounded-md mx-auto max-w-[80%] my-2">
+                      <i className="fas fa-history mr-1"></i> {msg.message}
+                    </div>
+                  )}
                 </div>
               ))}
               

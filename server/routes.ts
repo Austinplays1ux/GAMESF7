@@ -56,7 +56,13 @@ type TypingMessage = {
   timestamp: number;
 };
 
-type WebSocketMessage = ChatMessage | UserJoinedMessage | UserLeftMessage | LobbyInfoMessage | TypingMessage;
+type ResetMessagesMessage = {
+  type: 'reset_messages';
+  timestamp: number;
+  message: string;
+};
+
+type WebSocketMessage = ChatMessage | UserJoinedMessage | UserLeftMessage | LobbyInfoMessage | TypingMessage | ResetMessagesMessage;
 
 // User connection mapping
 interface ConnectedUser {
@@ -73,6 +79,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Store connected users
   const connectedUsers: Map<number, ConnectedUser> = new Map();
+  
+  // Schedule daily message reset
+  function scheduleMessageReset() {
+    // Calculate time until next reset (midnight)
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    const timeUntilReset = tomorrow.getTime() - now.getTime();
+    
+    console.log(`Scheduled message reset in ${Math.floor(timeUntilReset / 1000 / 60)} minutes`);
+    
+    setTimeout(() => {
+      if (wss.clients.size > 0) {
+        // Send reset message to all connected clients
+        const resetMessage: ResetMessagesMessage = {
+          type: 'reset_messages',
+          timestamp: Date.now(),
+          message: 'Chat history has been cleared for a new day.'
+        };
+        
+        wss.clients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(resetMessage));
+          }
+        });
+        
+        console.log('Daily message reset triggered');
+      } else {
+        console.log('No active clients, skipping message reset');
+      }
+      
+      // Schedule next reset
+      scheduleMessageReset();
+    }, timeUntilReset);
+  }
+  
+  // Start the daily reset schedule
+  scheduleMessageReset();
   
   wss.on('connection', (ws: WebSocket) => {
     console.log('New WebSocket connection established');
