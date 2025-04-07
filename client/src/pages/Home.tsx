@@ -68,6 +68,12 @@ const Home: React.FC = () => {
   }, []);
 
   const handleOpenGameDetail = (game: GameWithDetails) => {
+    // If it's the Bloxd.io game, navigate directly to the Bloxd.io page
+    if (game.title === "Bloxd.io") {
+      navigate("/games/bloxd-io");
+      return;
+    }
+    
     setSelectedGame(game);
     setIsGameDetailOpen(true);
   };
@@ -90,7 +96,7 @@ const Home: React.FC = () => {
     {
       id: 1, 
       title: "Bloxd.io", 
-      thumbnailUrl: "https://images.crazygames.com/games/bloxd-io/cover-1600236603408.png"
+      thumbnailUrl: "/images/games/bloxd-io.png"
     },
     {
       id: 2, 

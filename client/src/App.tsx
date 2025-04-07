@@ -13,6 +13,7 @@ import Settings from "@/pages/Settings";
 import MyGames from "@/pages/MyGames";
 import Admin from "@/pages/Admin";
 import Multiplayer from "@/pages/Multiplayer";
+import BloxdIo from "@/pages/BloxdIo";
 import AppHeader from "@/components/AppHeader";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -43,6 +44,7 @@ function Router() {
           <ProtectedRoute path="/my-games" component={MyGames} />
           <ProtectedRoute path="/admin" component={Admin} />
           <ProtectedRoute path="/multiplayer" component={Multiplayer} />
+          <ProtectedRoute path="/games/bloxd-io" component={BloxdIo} />
           <Route path="*" component={NotFound} />
         </Switch>
       </div>
