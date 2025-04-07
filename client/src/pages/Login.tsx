@@ -76,23 +76,44 @@ const Login: React.FC = () => {
     try {
       console.log("Login form submitted:", loginForm);
       
-      // DIRECT LOGIN - Force a fixed user for now to debug
-      // This simulates a successful login without actually checking credentials
-      const dummyUser = {
-        id: 1,
-        username: loginForm.username,
-        email: `${loginForm.username}@example.com`,
-        isAdmin: loginForm.username === "admin" || loginForm.username === "crystalgamer77",
-        isOwner: loginForm.username === "crystalgamer77"
+      // Check credentials against valid users
+      const validUsers = [
+        { username: "testuser", password: "password", isAdmin: false, isOwner: false },
+        { username: "admin", password: "admin123", isAdmin: true, isOwner: false },
+        { username: "crystalgamer77", password: "Al998340", isAdmin: true, isOwner: true }
+      ];
+      
+      // Find the user with matching username and password
+      const matchedUser = validUsers.find(
+        user => user.username === loginForm.username && user.password === loginForm.password
+      );
+      
+      if (!matchedUser) {
+        toast({
+          title: "Login failed",
+          description: "Invalid username or password",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      // Create user object for storage
+      const userObj = {
+        id: matchedUser.username === "admin" ? 2 : (matchedUser.username === "crystalgamer77" ? 3 : 1),
+        username: matchedUser.username,
+        email: `${matchedUser.username}@example.com`,
+        isAdmin: matchedUser.isAdmin,
+        isOwner: matchedUser.isOwner
       };
       
       // Store the user in localStorage for persistence across page loads
-      localStorage.setItem('currentUser', JSON.stringify(dummyUser));
+      localStorage.setItem('currentUser', JSON.stringify(userObj));
       
       // Show success message
       toast({
         title: "Login successful!",
-        description: `Welcome back, ${dummyUser.username}!`,
+        description: `Welcome back, ${userObj.username}!`,
       });
       
       // Redirect to home page
@@ -144,14 +165,52 @@ const Login: React.FC = () => {
       return;
     }
 
+    // Check if username already exists
+    const validUsers = [
+      { username: "testuser", password: "password", isAdmin: false, isOwner: false },
+      { username: "admin", password: "admin123", isAdmin: true, isOwner: false },
+      { username: "crystalgamer77", password: "Al998340", isAdmin: true, isOwner: true }
+    ];
+    
+    if (validUsers.some(user => user.username === signupForm.username)) {
+      toast({
+        title: "Username already exists",
+        description: "Please choose a different username",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      const { confirmPassword, ...userData } = signupForm;
-      await register(userData);
-      // Navigate is handled by the useEffect hook that watches for user changes
+      // Create new user
+      const newUser = {
+        id: 4, // Next available ID
+        username: signupForm.username,
+        email: signupForm.email,
+        isAdmin: false,
+        isOwner: false
+      };
+      
+      // Store new user in localStorage
+      localStorage.setItem('currentUser', JSON.stringify(newUser));
+      
+      // Show success message
+      toast({
+        title: "Account created!",
+        description: `Welcome to GAMESF7, ${newUser.username}!`,
+      });
+      
+      // Redirect to home page
+      window.location.href = '/home';
     } catch (error) {
-      // Error handling is done in the register function
+      toast({
+        title: "Registration failed",
+        description: "An error occurred during registration",
+        variant: "destructive",
+      });
+      console.error("Registration failed:", error);
     } finally {
       setIsLoading(false);
     }
