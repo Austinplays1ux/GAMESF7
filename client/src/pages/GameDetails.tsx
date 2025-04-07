@@ -20,17 +20,34 @@ const GameDetails: React.FC = () => {
       try {
         const response = await fetch(`/api/games/${gameId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch game details');
+          throw new Error(`Failed to fetch game details: ${response.status}`);
         }
-        return response.json();
+        const data = await response.json();
+        if (!data) {
+          throw new Error('No game data received');
+        }
+        return data;
       } catch (error) {
         console.error('Error fetching game:', error);
         throw error;
       }
     },
     enabled: !!gameId,
-    retry: 2
+    retry: 1,
+    retryDelay: 1000
   });
+
+  if (isError) {
+    return (
+      <div className="container mx-auto py-6 px-4">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Error Loading Game</h2>
+          <p className="text-gray-400 mb-4">Unable to load game details. Please try again later.</p>
+          <Button onClick={() => navigate('/')}>Return Home</Button>
+        </div>
+      </div>
+    );
+  }
 
   const handlePlayGame = async () => {
     if (game) {
