@@ -22,10 +22,18 @@ const GamePlayModal: React.FC<GamePlayModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
-      // Reduce initial loading time
       const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 800);
+        if (iframeRef.current) {
+          // Add load event listener
+          iframeRef.current.onload = () => setIsLoading(false);
+          iframeRef.current.onerror = () => {
+            setIsLoading(false);
+            console.error("Failed to load game");
+          };
+        } else {
+          setIsLoading(false);
+        }
+      }, 500);
       
       return () => clearTimeout(timer);
     }
@@ -108,9 +116,13 @@ const GamePlayModal: React.FC<GamePlayModalProps> = ({
               src={game.gameUrl}
               title={game.title}
               className="w-full h-full border-0"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-              allow="autoplay; fullscreen"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads"
+              allow="autoplay; fullscreen; clipboard-write"
               loading="lazy"
+              onError={(e) => {
+                console.error("Game load error:", e);
+                handleRefreshGame();
+              }}
             ></iframe>
           )}
         </div>
