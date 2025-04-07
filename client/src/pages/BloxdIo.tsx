@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BloxdIo() {
   const [isLoading, setIsLoading] = useState(true);
@@ -85,6 +85,7 @@ export default function BloxdIo() {
                 onError={(e) => {
                   console.error("Failed to load Bloxd.io:", e);
                   setHasError(true);
+                  const { toast } = useToast();
                   toast({
                     title: "Error loading game",
                     description: "Please try refreshing the page",
