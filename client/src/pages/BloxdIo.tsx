@@ -3,13 +3,16 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/use-toast";
 
 export default function BloxdIo() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const gameUrl = "https://bloxd.io";
 
   useEffect(() => {
+    document.title = "Bloxd.io | GAMESF7";
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1500);
@@ -27,6 +30,16 @@ export default function BloxdIo() {
     }
   };
 
+  const handleRetry = () => {
+    setHasError(false);
+    setIsLoading(true);
+    const iframe = document.getElementById("bloxd-iframe") as HTMLIFrameElement;
+    if (iframe) {
+      iframe.src = gameUrl;
+    }
+    setTimeout(() => setIsLoading(false), 1500);
+  };
+
   return (
     <div className="container mx-auto py-6 px-4">
       <div className="flex flex-col space-y-6">
@@ -36,7 +49,7 @@ export default function BloxdIo() {
             onClick={handleFullscreen}
             variant="outline"
             className="glass-button"
-            disabled={isLoading}
+            disabled={isLoading || hasError}
           >
             <i className="fas fa-expand mr-2"></i> Fullscreen
           </Button>
@@ -71,11 +84,12 @@ export default function BloxdIo() {
                 title="Bloxd.io"
                 onError={(e) => {
                   console.error("Failed to load Bloxd.io:", e);
-                  setIsLoading(true);
-                  // Attempt to reload
-                  if (e.currentTarget) {
-                    e.currentTarget.src = gameUrl;
-                  }
+                  setHasError(true);
+                  toast({
+                    title: "Error loading game",
+                    description: "Please try refreshing the page",
+                    variant: "destructive"
+                  });
                 }}
               ></iframe>
             </div>
