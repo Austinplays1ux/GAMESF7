@@ -76,7 +76,7 @@ export const mockGames: Game[] = [
     id: 1,
     title: "Bloxd.io",
     description: "A fast-paced block building game where you compete against other players to build the best structures.",
-    thumbnailUrl: "https://images.crazygames.com/games/bloxd-io/cover-1600236603408.png",
+    thumbnailUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShT4ysT9elNLh_SVLehunOEyW31ELOHhmLXg&s",
     platformId: 2,
     creatorId: 3,
     gameUrl: "https://bloxd.io",
