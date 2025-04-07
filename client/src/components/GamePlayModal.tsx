@@ -22,10 +22,10 @@ const GamePlayModal: React.FC<GamePlayModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
-      // Simulate loading time
+      // Reduce initial loading time
       const timer = setTimeout(() => {
         setIsLoading(false);
-      }, 2000);
+      }, 800);
       
       return () => clearTimeout(timer);
     }
@@ -38,13 +38,13 @@ const GamePlayModal: React.FC<GamePlayModalProps> = ({
   
   const handleRefreshGame = () => {
     if (game.htmlContent) {
-      // For HTML content, simply restart the loading process
       setIsLoading(true);
-      setTimeout(() => setIsLoading(false), 1000);
+      setTimeout(() => setIsLoading(false), 500);
     } else if (iframeRef.current) {
-      // For URL-based games, reload the iframe
-      iframeRef.current.src = iframeRef.current.src;
       setIsLoading(true);
+      iframeRef.current.src = iframeRef.current.src;
+      // Add timeout to ensure loading state is shown
+      iframeRef.current.onload = () => setIsLoading(false);
     }
   };
   
