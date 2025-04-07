@@ -9,21 +9,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Set up session store with PostgreSQL
-const PostgresqlStore = pgSession(session);
-const sessionStore = new PostgresqlStore({
-  pool: pool,
-  tableName: "user_sessions" // We'll create this table if it doesn't exist
-});
-
-// Configure session middleware
+// Set up simple in-memory session for now
 app.use(session({
-  store: sessionStore,
   secret: "gamesf7_secret_key", // In production, use environment variable
-  resave: false,
-  saveUninitialized: false,
+  resave: true,
+  saveUninitialized: true,
   cookie: { 
-    secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+    secure: false, // Not using HTTPS in development
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     httpOnly: true
   },

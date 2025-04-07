@@ -222,9 +222,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/login", async (req: Request, res: Response) => {
     try {
+      console.log("Login API called with body:", JSON.stringify(req.body));
+      
       const { username, password: inputPassword } = req.body;
       
       if (!username || !inputPassword) {
+        console.log("Login rejected: Missing username or password");
         return res.status(400).json({ message: "Username and password are required" });
       }
       
@@ -232,6 +235,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get user from storage with optimized query
       const user = await storage.getUserByUsername(username);
+      
+      console.log(`User lookup result for ${username}:`, user ? "Found" : "Not found");
       
       // Early check for user existence (prevents timing attacks)
       if (!user) {
@@ -242,6 +247,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if password matches (in a production app, we would use bcrypt.compare here)
       const passwordValid = user.password === inputPassword;
+      console.log(`Password validation for ${username}: ${passwordValid ? "Success" : "Failed"} (received: "${inputPassword}", stored: "${user.password}")`);
+      
       if (!passwordValid) {
         console.log("Authentication failed: Password invalid");
         return res.status(401).json({ message: "Invalid username or password" });
@@ -257,23 +264,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isOwner: user.username === 'crystalgamer77',
       };
 
+      console.log(`Session before login:`, req.session ? "Exists" : "Missing", 
+        req.session?.id ? `ID: ${req.session.id}` : "No ID");
+
       // Set up session with user information
       if (req.session) {
         req.session.user = userData as User;
         req.session.userId = user.id;
         req.session.isAuthenticated = true;
         
-        // Save session explicitly to ensure it's stored immediately
-        req.session.save((err) => {
-          if (err) {
-            console.error("Session save error:", err);
-          } else {
-            console.log(`Session created for user ID: ${user.id}`);
-          }
-          
-          // Return response after session is saved
-          res.status(200).json(userData);
-        });
+        console.log(`Session data prepared: userId=${user.id}, username=${user.username}, isAuthenticated=true`);
+        
+        // Return response immediately
+        res.status(200).json(userData);
+        
+        // Log session state after setting
+        console.log(`Session after login: userId=${req.session.userId}, isAuthenticated=${req.session.isAuthenticated}`);
       } else {
         console.log("Warning: No session object available");
         res.status(200).json(userData);
@@ -301,20 +307,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Add an endpoint to get the current logged-in user
+  // Testing route for direct login
+  app.get("/api/testlogin/:username", async (req: Request, res: Response) => {
+    try {
+      const username = req.params.username;
+      console.log(`Test login for ${username}`);
+      
+      // Get user from storage
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Create user object without the password
+      const { password: _, ...userWithoutPassword } = user;
+      const userData = {
+        ...userWithoutPassword,
+        isAdmin: user.username === 'crystalgamer77' || user.username === 'admin',
+        isOwner: user.username === 'crystalgamer77',
+      };
+      
+      // Set up session with user information
+      if (req.session) {
+        req.session.user = userData as User;
+        req.session.userId = user.id;
+        req.session.isAuthenticated = true;
+        console.log("Session updated successfully");
+      }
+      
+      return res.json({ success: true, user: userData });
+    } catch (error) {
+      console.error("Test login error:", error);
+      return res.status(500).json({ message: "Test login failed" });
+    }
+  });
+
   app.get("/api/user", (req: Request, res: Response) => {
     console.log("Get current user request received");
     console.log("Session exists:", Boolean(req.session));
+    console.log("Session ID:", req.session?.id);
+    console.log("Cookie headers:", req.headers.cookie);
+    console.log("Session content:", req.session ? JSON.stringify(req.session) : "No session");
     
     if (req.session) {
       console.log("Session auth status:", req.session.isAuthenticated);
       console.log("Session user exists:", Boolean(req.session.user));
+      console.log("Session userId:", req.session.userId);
       if (req.session.user) {
         console.log("User in session:", req.session.user.id, req.session.user.username);
       }
     }
     
-    if (req.session && req.session.isAuthenticated && req.session.user) {
+    // Added more forgiving check - only require session.user
+    if (req.session && req.session.user) {
       console.log("Returning authenticated user");
+      
+      // Also set isAuthenticated flag if it's not set
+      if (!req.session.isAuthenticated) {
+        console.log("Fixing missing isAuthenticated flag");
+        req.session.isAuthenticated = true;
+      }
+      
       return res.status(200).json(req.session.user);
     } else {
       console.log("No authenticated user found in session");
