@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,11 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function BloxdIo() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const gameUrl = "https//:bloxd.io";
-  const bloxdImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShT4ysT9elNLh_SVLehunOEyW31ELOHhmLXg&s";
+  const gameUrl = "https://bloxd.io";
 
   useEffect(() => {
-    // Set timeout to simulate loading and improve iframe rendering experience
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1500);
@@ -47,11 +46,11 @@ export default function BloxdIo() {
           {isLoading ? (
             <div className="aspect-video w-full flex items-center justify-center bg-zinc-900/80">
               <div className="text-center">
-                <div className="relative mx-auto mb-6" style={{ maxWidth: "300px" }}>
+                <div className="relative mx-auto mb-6">
                   <img 
-                    src={bloxdImageUrl} 
+                    src="/images/games/bloxd-io.png"
                     alt="Bloxd.io"
-                    className="w-full h-auto rounded-lg shadow-lg"
+                    className="w-full max-w-[300px] h-auto rounded-lg shadow-lg"
                   />
                 </div>
                 <div className="mt-4 flex justify-center">
@@ -68,8 +67,6 @@ export default function BloxdIo() {
                 className="w-full h-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                 title="Bloxd.io"
-                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                referrerPolicy="no-referrer"
               ></iframe>
             </div>
           )}
@@ -96,13 +93,6 @@ export default function BloxdIo() {
               <li><span className="font-semibold">Tab</span> - Open inventory</li>
             </ul>
           </Card>
-        </div>
-
-        <div className="text-sm text-zinc-500 text-center mt-4">
-          <p>
-            Bloxd.io is developed by Bloxd.io and not affiliated with GamesF7. This is an embedded version
-            of the game for convenience. All rights belong to their respective owners.
-          </p>
         </div>
       </div>
     </div>
