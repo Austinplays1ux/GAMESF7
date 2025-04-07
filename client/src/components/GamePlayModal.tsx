@@ -22,22 +22,40 @@ const GamePlayModal: React.FC<GamePlayModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
-      const timer = setTimeout(() => {
-        if (iframeRef.current) {
-          // Add load event listener
-          iframeRef.current.onload = () => setIsLoading(false);
-          iframeRef.current.onerror = () => {
-            setIsLoading(false);
-            console.error("Failed to load game");
-          };
-        } else {
-          setIsLoading(false);
-        }
-      }, 500);
       
-      return () => clearTimeout(timer);
+      // Clear any existing timeouts
+      let loadTimeout: NodeJS.Timeout;
+      
+      if (iframeRef.current) {
+        iframeRef.current.onload = () => {
+          setIsLoading(false);
+          clearTimeout(loadTimeout);
+        };
+        
+        iframeRef.current.onerror = (error) => {
+          console.error("Game load error:", error);
+          setIsLoading(false);
+          handleRefreshGame();
+        };
+        
+        // Timeout after 10 seconds
+        loadTimeout = setTimeout(() => {
+          if (isLoading) {
+            setIsLoading(false);
+            handleRefreshGame();
+          }
+        }, 10000);
+      }
+      
+      return () => {
+        clearTimeout(loadTimeout);
+        if (iframeRef.current) {
+          iframeRef.current.onload = null;
+          iframeRef.current.onerror = null;
+        }
+      };
     }
-  }, [isOpen]);
+  }, [isOpen, isLoading]);
   
   const handleToggleMute = () => {
     setIsMuted(!isMuted);
