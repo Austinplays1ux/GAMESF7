@@ -57,36 +57,72 @@ export const getQueryFn: <T>(options: {
     console.log(`Query fetch: GET ${url}`);
     
     try {
-      const res = await fetch(url, {
+      // Check for parameters in the queryKey
+      let fullUrl = url;
+      if (queryKey.length > 1 && typeof queryKey[1] === 'object') {
+        const params = queryKey[1] as Record<string, any>;
+        const searchParams = new URLSearchParams();
+        
+        // Add all params to the URL
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined) {
+            searchParams.append(key, String(value));
+          }
+        });
+        
+        const queryString = searchParams.toString();
+        if (queryString) {
+          fullUrl = `${url}${url.includes('?') ? '&' : '?'}${queryString}`;
+        }
+      }
+      
+      console.log(`Full URL with params: ${fullUrl}`);
+      
+      const res = await fetch(fullUrl, {
         credentials: "include",
       });
 
-      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-        console.log(`Auth required (401) for ${url}, returning null as configured`);
-        return null;
+      // Handle 401 based on configuration
+      if (res.status === 401) {
+        console.log(`Auth required (401) for ${fullUrl}`);
+        if (unauthorizedBehavior === "returnNull") {
+          console.log(`Returning null as configured`);
+          return null;
+        }
       }
-
-      await throwIfResNotOk(res);
+      
+      // Handle other error statuses
+      if (!res.ok) {
+        console.log(`Request failed with status ${res.status} for ${fullUrl}`);
+        if (res.status >= 500) {
+          console.log(`Server error (${res.status}), using mock data if available`);
+          // For server errors, we'll let the component use its fallback data
+          return null;
+        }
+        await throwIfResNotOk(res);
+      }
+      
       const data = await res.json();
-      console.log(`Query data received for ${url}`);
+      console.log(`Query data received for ${fullUrl}: ${data ? (Array.isArray(data) ? `${data.length} items` : 'object') : 'null'}`);
       return data;
     } catch (error) {
       console.error(`Query fetch failed for ${url}:`, error);
-      throw error;
+      // Return null to allow components to use fallback data
+      return null;
     }
   };
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
+      queryFn: getQueryFn({ on401: "returnNull" }), // Changed to returnNull so 401 doesn't cause errors
       refetchInterval: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
-      retry: false,
+      retry: 1, // Add one retry for network issues
     },
     mutations: {
-      retry: false,
+      retry: 1, // Add one retry for network issues
     },
   },
 });

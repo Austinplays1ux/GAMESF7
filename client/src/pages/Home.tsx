@@ -38,19 +38,16 @@ const Home: React.FC = () => {
   // Query for Roblox games
   const { data: robloxGames = [], isLoading: isLoadingRoblox } = useQuery<GameWithDetails[]>({
     queryKey: ['/api/games', { platformId: ROBLOX_PLATFORM_ID }],
-    queryFn: () => fetch(`/api/games?platformId=${ROBLOX_PLATFORM_ID}`).then(res => res.json()),
   });
   
   // Query for Fortnite games
   const { data: fortniteGames = [], isLoading: isLoadingFortnite } = useQuery<GameWithDetails[]>({
     queryKey: ['/api/games', { platformId: FORTNITE_PLATFORM_ID }],
-    queryFn: () => fetch(`/api/games?platformId=${FORTNITE_PLATFORM_ID}`).then(res => res.json()),
   });
   
   // Query for RecRoom games
   const { data: recroomGames = [], isLoading: isLoadingRecroom } = useQuery<GameWithDetails[]>({
     queryKey: ['/api/games', { platformId: RECROOM_PLATFORM_ID }],
-    queryFn: () => fetch(`/api/games?platformId=${RECROOM_PLATFORM_ID}`).then(res => res.json()),
   });
 
   const handleOpenGameDetail = (game: GameWithDetails) => {
