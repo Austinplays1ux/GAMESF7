@@ -11,6 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ImageIcon } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface GameEditModalProps {
   game: GameWithDetails | null;
@@ -28,6 +29,7 @@ type GameFormValues = z.infer<typeof gameSchema>;
 export default function GameEditModal({ game, isOpen, onClose }: GameEditModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameSchema),
@@ -41,34 +43,81 @@ export default function GameEditModal({ game, isOpen, onClose }: GameEditModalPr
   const onSubmit = async (values: GameFormValues) => {
     if (!game) return;
 
-    setIsSubmitting(true);
-    try {
-      const updatedGame = await apiRequest<Game>(`/api/games/${game.id}`, {
-        method: "PATCH",
-        body: JSON.stringify(values)
+    // Check if the user is an admin
+    if (!user?.isAdmin) {
+      toast({
+        title: "Permission denied",
+        description: "You don't have permission to edit games.",
+        variant: "destructive"
       });
+      return;
+    }
 
-      // Update the cache with the new game data
-      queryClient.invalidateQueries({ queryKey: ['/api/games'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/games/featured'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/games/recommended'] });
-      
+    // Start with optimistic UI updates
+    setIsSubmitting(true);
+    
+    // Create an optimistic game update
+    const optimisticGame = {
+      ...game,
+      thumbnailUrl: values.thumbnailUrl
+    };
+    
+    // Immediately update UI with optimistic data
+    const previousGames = queryClient.getQueryData<GameWithDetails[]>(['/api/games']) || [];
+    const previousFeaturedGames = queryClient.getQueryData<GameWithDetails[]>(['/api/games/featured']) || [];
+    const previousRecommendedGames = queryClient.getQueryData<GameWithDetails[]>(['/api/games/recommended']) || [];
+    
+    // Update all relevant query caches optimistically
+    queryClient.setQueryData<GameWithDetails[]>(['/api/games'], 
+      oldGames => (oldGames || []).map(g => g.id === game.id ? optimisticGame : g)
+    );
+    
+    queryClient.setQueryData<GameWithDetails[]>(['/api/games/featured'], 
+      oldGames => (oldGames || []).map(g => g.id === game.id ? optimisticGame : g)
+    );
+    
+    queryClient.setQueryData<GameWithDetails[]>(['/api/games/recommended'], 
+      oldGames => (oldGames || []).map(g => g.id === game.id ? optimisticGame : g)
+    );
+    
+    // Show immediate success feedback
+    toast({
+      title: "Game updating",
+      description: `${game.title} thumbnail is being updated...`,
+    });
+    
+    // Close the modal immediately for a better UX
+    onClose();
+    
+    // In the background, actually send the update to the server
+    apiRequest<Game>(`/api/games/${game.id}`, {
+      method: "PATCH",
+      body: JSON.stringify(values),
+      headers: {
+        'x-username': user.username // Add admin authentication via headers
+      }
+    }).then(() => {
+      // On success, just confirm with a toast
       toast({
         title: "Game updated",
-        description: `${updatedGame.title} thumbnail has been updated successfully.`,
+        description: `${game.title} thumbnail has been updated successfully.`,
       });
-      
-      onClose();
-    } catch (error) {
+    }).catch(error => {
       console.error("Failed to update game:", error);
+      
+      // On error, revert the optimistic updates
+      queryClient.setQueryData(['/api/games'], previousGames);
+      queryClient.setQueryData(['/api/games/featured'], previousFeaturedGames);
+      queryClient.setQueryData(['/api/games/recommended'], previousRecommendedGames);
+      
       toast({
         title: "Error",
         description: "Failed to update game thumbnail. Please try again.",
         variant: "destructive"
       });
-    } finally {
+    }).finally(() => {
       setIsSubmitting(false);
-    }
+    });
   };
 
   const thumbnailUrl = form.watch('thumbnailUrl');

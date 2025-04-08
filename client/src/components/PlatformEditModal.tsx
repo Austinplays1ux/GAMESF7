@@ -76,10 +76,39 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
 
     setIsSubmitting(true);
     try {
-      console.log("Submitting platform update:", values);
-      console.log("Current user:", user);
+      // Check if the user is admin - if not, show error immediately without network request
+      if (!user?.isAdmin) {
+        toast({
+          title: "Unauthorized",
+          description: "Only admin users can edit platforms.",
+          variant: "destructive"
+        });
+        return;
+      }
       
-      // Include the username in headers for admin check in case session is not working
+      // Optimistically update the UI immediately
+      // Create an optimistic updated platform
+      const optimisticPlatform = {
+        ...platform,
+        ...values
+      };
+      
+      // Update the cache immediately for a responsive feel
+      queryClient.setQueryData(['/api/platforms'], (oldData: Platform[] | undefined) => {
+        if (!oldData) return [optimisticPlatform];
+        return oldData.map(p => p.id === platform.id ? optimisticPlatform : p);
+      });
+      
+      // Close the modal immediately for better user experience
+      onClose();
+      
+      // Show optimistic toast
+      toast({
+        title: "Updating platform...",
+        description: `${values.name} platform is being updated.`,
+      });
+      
+      // In the background, make the actual API request
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
@@ -88,28 +117,37 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
         headers['x-username'] = user.username;
       }
       
-      const updatedPlatform = await apiRequest<Platform>(`/api/platforms/${platform.id}`, {
+      // Use a timeout to ensure we don't hang on this request
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 8000);
+      });
+      
+      const fetchPromise = apiRequest<Platform>(`/api/platforms/${platform.id}`, {
         method: "PATCH",
         body: JSON.stringify(values),
         headers
       });
-
-      console.log("Platform update response:", updatedPlatform);
-
-      // Update the cache with the new platform data
+      
+      // Race the fetch against a timeout
+      const updatedPlatform = await Promise.race([fetchPromise, timeoutPromise]) as Platform;
+      
+      // Update the cache with the confirmed data
       queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
       
+      // Show success toast
       toast({
         title: "Platform updated",
         description: `${updatedPlatform.name} platform has been updated successfully.`,
       });
-      
-      onClose();
     } catch (error) {
       console.error("Failed to update platform:", error);
+      
+      // Revert the optimistic update by refetching
+      queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
+      
       toast({
         title: "Error",
-        description: "Failed to update platform. Please try again. Make sure you're logged in as an admin user.",
+        description: "Failed to save all changes. The app will continue working with your changes applied locally.",
         variant: "destructive"
       });
     } finally {
