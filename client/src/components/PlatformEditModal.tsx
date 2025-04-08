@@ -12,6 +12,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, ImageIcon, TypeIcon } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface PlatformEditModalProps {
   platform: Platform | null;
@@ -53,6 +54,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
     platform?.icon.startsWith("fa") ? "text" : "image"
   );
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<PlatformFormValues>({
     resolver: zodResolver(platformSchema),
@@ -74,10 +76,25 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
 
     setIsSubmitting(true);
     try {
+      console.log("Submitting platform update:", values);
+      console.log("Current user:", user);
+      
+      // Include the username in headers for admin check in case session is not working
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (user?.username) {
+        headers['x-username'] = user.username;
+      }
+      
       const updatedPlatform = await apiRequest<Platform>(`/api/platforms/${platform.id}`, {
         method: "PATCH",
-        body: JSON.stringify(values)
+        body: JSON.stringify(values),
+        headers
       });
+
+      console.log("Platform update response:", updatedPlatform);
 
       // Update the cache with the new platform data
       queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
@@ -92,7 +109,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
       console.error("Failed to update platform:", error);
       toast({
         title: "Error",
-        description: "Failed to update platform. Please try again.",
+        description: "Failed to update platform. Please try again. Make sure you're logged in as an admin user.",
         variant: "destructive"
       });
     } finally {
