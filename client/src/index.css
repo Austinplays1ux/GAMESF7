@@ -183,6 +183,18 @@ body {
   color: white;
 }
 
+.glass-panel {
+  background: rgba(22, 8, 47, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.shadow-glow {
+  box-shadow: 0 0 20px rgba(136, 51, 255, 0.5);
+}
+
 /* Loading spinner animation for Bloxd.io page */
 .loading-spinner {
   width: 40px;

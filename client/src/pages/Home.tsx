@@ -119,8 +119,8 @@ const Home: React.FC = () => {
     <div 
       className="min-h-screen" 
       style={{
-        background: `linear-gradient(rgba(22, 8, 47, 0.9), rgba(22, 8, 47, 0.97)), 
-                    url('https://cdn.replit.com/_next/static/media/replit-home.a4e6a113.png')`,
+        background: `linear-gradient(rgba(22, 8, 47, 0.85), rgba(22, 8, 47, 0.95)), 
+                    url('/images/IMG_1348.jpeg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'
@@ -128,26 +128,38 @@ const Home: React.FC = () => {
     >
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Hero */}
-        <div className="mb-16 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'Sofia Pro, sans-serif' }}>
-            Welcome to GAMESF7
-          </h1>
-          <p className="text-xl text-gray-300 mb-8">
-            Discover and play awesome games created by the community
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button 
-              className="bg-purple-600 hover:bg-purple-700 rounded-full px-8 py-6"
-              onClick={() => navigate("/explore")}
-            >
-              <i className="fas fa-compass mr-2"></i> Explore Games
-            </Button>
-            <Button 
-              className="bg-pink-600 hover:bg-pink-700 rounded-full px-8 py-6"
-              onClick={() => navigate("/create")}
-            >
-              <i className="fas fa-plus mr-2"></i> Create Game
-            </Button>
+        <div className="mb-16 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="flex flex-col md:flex-row items-center glass-panel py-12 px-8">
+            <div className="md:w-1/2 text-center md:text-left md:pr-8">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'Sofia Pro, sans-serif' }}>
+                Welcome to GAMESF7
+              </h1>
+              <p className="text-xl text-gray-300 mb-8">
+                Discover and play awesome games created by the community
+              </p>
+              <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                <Button 
+                  className="bg-purple-600 hover:bg-purple-700 rounded-full px-8 py-6"
+                  onClick={() => navigate("/explore")}
+                >
+                  <i className="fas fa-compass mr-2"></i> Explore Games
+                </Button>
+                <Button 
+                  className="bg-pink-600 hover:bg-pink-700 rounded-full px-8 py-6"
+                  onClick={() => navigate("/create")}
+                >
+                  <i className="fas fa-plus mr-2"></i> Create Game
+                </Button>
+              </div>
+            </div>
+            <div className="mt-8 md:mt-0 md:w-1/2">
+              <img 
+                src="/images/IMG_1348.jpeg" 
+                alt="Gaming Showcase" 
+                className="w-full h-auto rounded-xl border-4 border-purple-500/30 shadow-glow transform transition-transform hover:scale-105"
+                style={{ maxHeight: '400px', objectFit: 'cover' }}
+              />
+            </div>
           </div>
         </div>
 
