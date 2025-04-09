@@ -299,7 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fast path for admin check - hardcoded admin users for development
       const username = req.headers['x-username'] as string | undefined;
-      const isAdminViaHardcoded = username?.toLowerCase() === 'crystalgamer77' || username?.toLowerCase() === 'admin';
+      const isAdminViaHardcoded = username === 'crystalgamer77' || username === 'admin';
       const isAdminViaSession = req.session?.user?.isAdmin === true;
       
       // Quick admin authorization check
@@ -450,7 +450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fast path for admin check - hardcoded admin users for development
       const username = req.headers['x-username'] as string | undefined;
-      const isAdminViaHardcoded = username?.toLowerCase() === 'crystalgamer77' || username?.toLowerCase() === 'admin';
+      const isAdminViaHardcoded = username === 'crystalgamer77' || username === 'admin';
       const isAdminViaSession = req.session?.user?.isAdmin === true;
       
       // Quick admin authorization check

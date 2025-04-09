@@ -100,9 +100,9 @@ const Login: React.FC = () => {
       
       // Create user object for storage
       const userObj = {
-        id: matchedUser.username === "admin" ? 2 : (matchedUser.username === "crystalgamer77" ? 3 : 1),
-        username: matchedUser.username,
-        email: `${matchedUser.username}@example.com`,
+        id: matchedUser.username.toLowerCase() === "admin" ? 2 : (matchedUser.username.toLowerCase() === "crystalgamer77" ? 3 : 1),
+        username: matchedUser.username, // Keep original capitalization of username
+        email: `${matchedUser.username.toLowerCase()}@example.com`,
         isAdmin: matchedUser.isAdmin,
         isOwner: matchedUser.isOwner
       };

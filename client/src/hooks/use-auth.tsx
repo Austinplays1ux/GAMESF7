@@ -106,11 +106,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // We found a valid user in our hardcoded list
         const { password, ...userData } = matchedUser; // Remove password from user data
         
+        // Create a user object with proper ID assignment based on case-insensitive username
+        const userObj = {
+          ...userData,
+          id: userData.username.toLowerCase() === "admin" ? 2 : (userData.username.toLowerCase() === "crystalgamer77" ? 3 : 1),
+        };
+        
         // Store in localStorage
-        localStorage.setItem('currentUser', JSON.stringify(userData));
+        localStorage.setItem('currentUser', JSON.stringify(userObj));
         
         console.log("Login successful (local validation)");
-        setUser(userData as User);
+        setUser(userObj as User);
         
         toast({
           title: "Login successful!",
