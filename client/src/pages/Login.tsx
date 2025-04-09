@@ -83,9 +83,9 @@ const Login: React.FC = () => {
         { username: "crystalgamer77", password: "Al998340", isAdmin: true, isOwner: true }
       ];
       
-      // Find the user with matching username and password
+      // Find the user with matching username (case-insensitive) and password
       const matchedUser = validUsers.find(
-        user => user.username === loginForm.username && user.password === loginForm.password
+        user => user.username.toLowerCase() === loginForm.username.toLowerCase() && user.password === loginForm.password
       );
       
       if (!matchedUser) {
@@ -172,7 +172,7 @@ const Login: React.FC = () => {
       { username: "crystalgamer77", password: "Al998340", isAdmin: true, isOwner: true }
     ];
     
-    if (validUsers.some(user => user.username === signupForm.username)) {
+    if (validUsers.some(user => user.username.toLowerCase() === signupForm.username.toLowerCase())) {
       toast({
         title: "Username already exists",
         description: "Please choose a different username",

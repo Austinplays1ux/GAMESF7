@@ -96,9 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ];
 
     try {
-      // First, try the client-side validation
+      // First, try the client-side validation (case-insensitive username matching)
       const matchedUser = validLogins.find(user => 
-        user.username === credentials.username && 
+        user.username.toLowerCase() === credentials.username.toLowerCase() && 
         user.password === credentials.password
       );
 
