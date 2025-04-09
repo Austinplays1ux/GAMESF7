@@ -462,7 +462,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(200).json(updatedGame);
     } catch (error) {
       console.error("Failed to update game thumbnail:", error);
-      return res.status(500).json({ message: "Failed to update game thumbnail" });
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ 
+        message: "Failed to update game thumbnail",
+        error: errorMessage,
+        details: error
+      });
     }
   });
 

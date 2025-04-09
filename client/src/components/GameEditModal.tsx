@@ -87,9 +87,11 @@ export default function GameEditModal({ game, isOpen, onClose }: GameEditModalPr
     } catch (error) {
       console.error("Failed to update game:", error);
       
+      const errorMessage = error instanceof Error ? error.message : "Failed to update game thumbnail";
+      console.error("Update error:", error);
       toast({
         title: "Error",
-        description: "Failed to update game thumbnail. Please try again.",
+        description: `${errorMessage}. Please try again.`,
         variant: "destructive"
       });
     } finally {
