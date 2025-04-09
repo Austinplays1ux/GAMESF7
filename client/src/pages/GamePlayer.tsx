@@ -24,8 +24,9 @@ const GamePlayer: React.FC = () => {
   useEffect(() => {
     if (game) {
       // Record game play
-      apiRequest("POST", `/api/games/${game.id}/play`, {})
-        .catch(error => console.error("Failed to record play:", error));
+      apiRequest(`/api/games/${game.id}/play`, {
+        method: "POST"
+      }).catch(error => console.error("Failed to record play:", error));
       
       // Simulate loading time
       const timer = setTimeout(() => {
@@ -53,9 +54,13 @@ const GamePlayer: React.FC = () => {
   };
   
   const handleRefreshGame = () => {
-    if (iframeRef.current) {
+    if (game && game.platform.name === "HTML" && iframeRef.current) {
       iframeRef.current.src = iframeRef.current.src;
       setIsLoading(true);
+    } else {
+      // For non-HTML games, just reset the loading state
+      setIsLoading(true);
+      setTimeout(() => setIsLoading(false), 1000);
     }
   };
   
@@ -143,7 +148,7 @@ const GamePlayer: React.FC = () => {
                 <p className="text-lg">Loading game...</p>
                 <p className="text-sm text-white/60 mt-2">Please wait while the game loads</p>
               </div>
-            ) : (
+            ) : game.platform.name === "HTML" ? (
               <iframe
                 ref={iframeRef}
                 src={game.gameUrl}
@@ -153,6 +158,35 @@ const GamePlayer: React.FC = () => {
                 allow="autoplay; fullscreen"
                 loading="lazy"
               ></iframe>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-center p-8">
+                <img 
+                  src={game.thumbnailUrl} 
+                  alt={game.title} 
+                  className="w-full max-w-md mb-6 rounded-lg shadow-lg"
+                />
+                <h2 className="text-2xl font-bold mb-2">{game.title}</h2>
+                <p className="mb-6 text-white/70 max-w-2xl">
+                  This {game.platform.name} game requires the {game.platform.name} client to be installed on your device.
+                </p>
+                <div className="flex space-x-4">
+                  <a 
+                    href={game.gameUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-3 px-8 rounded-lg transition"
+                  >
+                    Open in {game.platform.name}
+                  </a>
+                  <Button
+                    variant="outline"
+                    className="border border-white/20 hover:bg-white/10"
+                    onClick={handleBack}
+                  >
+                    Back to Details
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
           

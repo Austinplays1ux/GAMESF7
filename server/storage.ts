@@ -147,7 +147,9 @@ export class MemStorage implements IStorage {
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    return Array.from(this.users.values()).find(user => 
+      user.username.toLowerCase() === username.toLowerCase()
+    );
   }
   
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -174,7 +176,9 @@ export class MemStorage implements IStorage {
   }
   
   async getPlatformByName(name: string): Promise<Platform | undefined> {
-    return Array.from(this.platforms.values()).find(platform => platform.name === name);
+    return Array.from(this.platforms.values()).find(platform => 
+      platform.name.toLowerCase() === name.toLowerCase()
+    );
   }
   
   async createPlatform(insertPlatform: InsertPlatform): Promise<Platform> {
@@ -219,7 +223,9 @@ export class MemStorage implements IStorage {
   }
   
   async getGameByTitle(title: string): Promise<Game | undefined> {
-    return Array.from(this.games.values()).find(game => game.title === title);
+    return Array.from(this.games.values()).find(game => 
+      game.title.toLowerCase() === title.toLowerCase()
+    );
   }
   
   async createGame(insertGame: InsertGame): Promise<Game> {
@@ -342,19 +348,22 @@ export class DatabaseStorage implements IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> {
     // Using a more efficient query with limit 1
     try {
-      const results = await db.select()
-        .from(users)
-        .where(eq(users.username, username))
-        .limit(1);
-      return results.length ? results[0] : undefined;
+      // Get all users and filter case-insensitively (needed because eq() is case-sensitive)
+      const allUsers = await db.select().from(users);
+      const matchingUser = allUsers.find(user => 
+        user.username.toLowerCase() === username.toLowerCase()
+      );
+      
+      return matchingUser;
     } catch (error) {
       console.error("Error getting user by username:", error);
       // Retry once on failure
-      const results = await db.select()
-        .from(users)
-        .where(eq(users.username, username))
-        .limit(1);
-      return results.length ? results[0] : undefined;
+      const allUsers = await db.select().from(users);
+      const matchingUser = allUsers.find(user => 
+        user.username.toLowerCase() === username.toLowerCase()
+      );
+      
+      return matchingUser;
     }
   }
   
@@ -379,8 +388,13 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getPlatformByName(name: string): Promise<Platform | undefined> {
-    const results = await db.select().from(platforms).where(eq(platforms.name, name));
-    return results.length ? results[0] : undefined;
+    // Get all platforms and filter case-insensitively
+    const allPlatforms = await db.select().from(platforms);
+    const matchingPlatform = allPlatforms.find(platform => 
+      platform.name.toLowerCase() === name.toLowerCase()
+    );
+    
+    return matchingPlatform;
   }
   
   async createPlatform(insertPlatform: InsertPlatform): Promise<Platform> {
@@ -427,8 +441,13 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getGameByTitle(title: string): Promise<Game | undefined> {
-    const results = await db.select().from(games).where(eq(games.title, title));
-    return results.length ? results[0] : undefined;
+    // Get all games and filter case-insensitively
+    const allGames = await db.select().from(games);
+    const matchingGame = allGames.find(game => 
+      game.title.toLowerCase() === title.toLowerCase()
+    );
+    
+    return matchingGame;
   }
   
   async createGame(insertGame: InsertGame): Promise<Game> {
