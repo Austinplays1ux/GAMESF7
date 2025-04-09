@@ -53,71 +53,48 @@ export default function GameEditModal({ game, isOpen, onClose }: GameEditModalPr
       return;
     }
 
-    // Start with optimistic UI updates
     setIsSubmitting(true);
     
-    // Create an optimistic game update
-    const optimisticGame = {
-      ...game,
-      thumbnailUrl: values.thumbnailUrl
-    };
-    
-    // Immediately update UI with optimistic data
-    const previousGames = queryClient.getQueryData<GameWithDetails[]>(['/api/games']) || [];
-    const previousFeaturedGames = queryClient.getQueryData<GameWithDetails[]>(['/api/games/featured']) || [];
-    const previousRecommendedGames = queryClient.getQueryData<GameWithDetails[]>(['/api/games/recommended']) || [];
-    
-    // Update all relevant query caches optimistically
-    queryClient.setQueryData<GameWithDetails[]>(['/api/games'], 
-      oldGames => (oldGames || []).map(g => g.id === game.id ? optimisticGame : g)
-    );
-    
-    queryClient.setQueryData<GameWithDetails[]>(['/api/games/featured'], 
-      oldGames => (oldGames || []).map(g => g.id === game.id ? optimisticGame : g)
-    );
-    
-    queryClient.setQueryData<GameWithDetails[]>(['/api/games/recommended'], 
-      oldGames => (oldGames || []).map(g => g.id === game.id ? optimisticGame : g)
-    );
-    
-    // Show immediate success feedback
-    toast({
-      title: "Game updating",
-      description: `${game.title} thumbnail is being updated...`,
-    });
-    
-    // Close the modal immediately for a better UX
-    onClose();
-    
-    // In the background, actually send the update to the server
-    apiRequest<Game>(`/api/games/${game.id}`, {
-      method: "PATCH",
-      body: JSON.stringify(values),
-      headers: {
-        'x-username': user.username // Add admin authentication via headers
-      }
-    }).then(() => {
-      // On success, just confirm with a toast
+    try {
+      // Show loading state
+      toast({
+        title: "Saving changes...",
+        description: `Updating ${game.title} thumbnail.`,
+      });
+      
+      // Send the update to the server and wait for the response
+      const updatedGame = await apiRequest<Game>(`/api/games/${game.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(values),
+        headers: {
+          'x-username': user.username // Add admin authentication via headers
+        }
+      });
+      
+      // Update cache with the response from the server
+      queryClient.invalidateQueries({ queryKey: ['/api/games'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/games/featured'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/games/recommended'] });
+      
+      // Close the modal on success
+      onClose();
+      
+      // Show success message
       toast({
         title: "Game updated",
         description: `${game.title} thumbnail has been updated successfully.`,
       });
-    }).catch(error => {
+    } catch (error) {
       console.error("Failed to update game:", error);
-      
-      // On error, revert the optimistic updates
-      queryClient.setQueryData(['/api/games'], previousGames);
-      queryClient.setQueryData(['/api/games/featured'], previousFeaturedGames);
-      queryClient.setQueryData(['/api/games/recommended'], previousRecommendedGames);
       
       toast({
         title: "Error",
         description: "Failed to update game thumbnail. Please try again.",
         variant: "destructive"
       });
-    }).finally(() => {
+    } finally {
       setIsSubmitting(false);
-    });
+    }
   };
 
   const thumbnailUrl = form.watch('thumbnailUrl');

@@ -86,29 +86,12 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
         return;
       }
       
-      // Optimistically update the UI immediately
-      // Create an optimistic updated platform
-      const optimisticPlatform = {
-        ...platform,
-        ...values
-      };
-      
-      // Update the cache immediately for a responsive feel
-      queryClient.setQueryData(['/api/platforms'], (oldData: Platform[] | undefined) => {
-        if (!oldData) return [optimisticPlatform];
-        return oldData.map(p => p.id === platform.id ? optimisticPlatform : p);
-      });
-      
-      // Close the modal immediately for better user experience
-      onClose();
-      
-      // Show optimistic toast
       toast({
-        title: "Updating platform...",
-        description: `${values.name} platform is being updated.`,
+        title: "Saving changes...",
+        description: `Updating ${values.name} platform.`,
       });
       
-      // In the background, make the actual API request
+      // Prepare headers with authentication info
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
@@ -117,22 +100,18 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
         headers['x-username'] = user.username;
       }
       
-      // Use a timeout to ensure we don't hang on this request
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 8000);
-      });
-      
-      const fetchPromise = apiRequest<Platform>(`/api/platforms/${platform.id}`, {
+      // Make the API request
+      const updatedPlatform = await apiRequest<Platform>(`/api/platforms/${platform.id}`, {
         method: "PATCH",
         body: JSON.stringify(values),
         headers
       });
       
-      // Race the fetch against a timeout
-      const updatedPlatform = await Promise.race([fetchPromise, timeoutPromise]) as Platform;
-      
       // Update the cache with the confirmed data
       queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
+      
+      // Close the modal on success
+      onClose();
       
       // Show success toast
       toast({
@@ -141,13 +120,10 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
       });
     } catch (error) {
       console.error("Failed to update platform:", error);
-      
-      // Revert the optimistic update by refetching
-      queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
-      
+            
       toast({
-        title: "Error",
-        description: "Failed to save all changes. The app will continue working with your changes applied locally.",
+        title: "Error saving changes",
+        description: "There was a problem saving your changes. Please try again.",
         variant: "destructive"
       });
     } finally {

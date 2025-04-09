@@ -307,35 +307,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Not authorized to update platform" });
       }
       
-      // For better performance, don't wait for the response - immediately return success
-      // This will be paired with optimistic UI updates on the client
-      res.status(200).json({ 
-        id, 
-        name,
-        icon,
-        description, 
-        color,
-        message: "Platform update in progress" 
-      });
-      
-      // In the background, actually update the platform
-      storage.updatePlatform(id, {
+      // Wait for the actual platform update instead of responding immediately
+      const updatedPlatform = await storage.updatePlatform(id, {
         name,
         icon,
         description,
         color
-      }).then(updatedPlatform => {
-        if (!updatedPlatform) {
-          console.log(`Warning: Platform with ID ${id} not found for background update`);
-        } else {
-          console.log(`Platform ${id} updated successfully in background`);
-        }
-      }).catch(err => {
-        console.error(`Error in background platform update for ID ${id}:`, err);
       });
+      
+      if (!updatedPlatform) {
+        return res.status(404).json({ message: `Platform with ID ${id} not found` });
+      }
+      
+      // Return the updated platform data
+      return res.status(200).json(updatedPlatform);
     } catch (error) {
       console.error("Error updating platform:", error);
-      res.status(500).json({ message: "Failed to update platform", error: String(error) });
+      return res.status(500).json({ message: "Failed to update platform", error: String(error) });
     }
   });
 
@@ -458,35 +446,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Not authorized to update game" });
       }
       
-      // Quickly confirm game exists
+      // Confirm game exists
       const game = await storage.getGame(id);
       if (!game) {
         return res.status(404).json({ message: "Game not found" });
       }
       
-      // For better performance, don't wait for the response - immediately return success
-      // This will be paired with optimistic UI updates on the client
-      res.status(200).json({ 
-        ...game,
-        thumbnailUrl,
-        message: "Game update in progress" 
-      });
+      // Wait for the actual update to complete
+      const updatedGame = await storage.updateGame(id, { thumbnailUrl });
       
-      // In the background, actually update the game
-      storage.updateGame(id, { thumbnailUrl })
-        .then(updatedGame => {
-          if (!updatedGame) {
-            console.log(`Warning: Game with ID ${id} not found for background update`);
-          } else {
-            console.log(`Game ${id} updated successfully in background`);
-          }
-        })
-        .catch(err => {
-          console.error(`Error in background game update for ID ${id}:`, err);
-        });
+      if (!updatedGame) {
+        return res.status(404).json({ message: "Game not found" });
+      }
+      
+      return res.status(200).json(updatedGame);
     } catch (error) {
       console.error("Failed to update game thumbnail:", error);
-      res.status(500).json({ message: "Failed to update game thumbnail" });
+      return res.status(500).json({ message: "Failed to update game thumbnail" });
     }
   });
 
