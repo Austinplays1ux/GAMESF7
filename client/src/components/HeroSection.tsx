@@ -15,8 +15,8 @@ const HeroSection: React.FC = () => {
   return (
     <section className="rounded-xl bg-gradient-to-r from-[#007AF4] to-[#6C2FF2] overflow-hidden mb-10">
       <div className="flex flex-col md:flex-row items-center">
-        <div className="p-8 md:w-1/2">
-          <h1 className="text-3xl md:text-4xl font-bold font-poppins mb-4">
+        <div className="p-4 md:p-8 md:w-1/2">
+          <h1 className="text-2xl md:text-4xl font-bold font-poppins mb-4 text-center md:text-left">
             Share & Play Games Together
           </h1>
           <p className="text-lg mb-6">

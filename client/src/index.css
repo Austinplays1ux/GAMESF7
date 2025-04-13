@@ -94,6 +94,19 @@ body {
 
 .game-card-hover {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+  .glass-button {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+  
+  .glass-input {
+    font-size: 16px; /* Prevents iOS zoom on input focus */
+  }
 }
 
 .game-card-hover:hover {
