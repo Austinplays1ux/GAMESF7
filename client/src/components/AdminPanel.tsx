@@ -18,6 +18,14 @@ export default function AdminPanel() {
   const [selectedGame, setSelectedGame] = useState<GameWithDetails | null>(null);
   const [isGameEditModalOpen, setIsGameEditModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
   const [platformsData, setPlatformsData] = useState<Platform[]>([]);
   const [gamesData, setGamesData] = useState<GameWithDetails[]>([]);
   const [isLoadingPlatforms, setIsLoadingPlatforms] = useState(true);
@@ -83,7 +91,7 @@ export default function AdminPanel() {
   };
 
   // Filter games based on search query
-  const filteredGames = searchQuery 
+  const filteredGames = debouncedSearch 
     ? gamesData.filter(game => 
         game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         game.platform.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -172,15 +180,15 @@ export default function AdminPanel() {
                 </div>
               </div>
               
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <table className="w-full border-collapse min-w-[640px]">
                   <thead>
                     <tr className="border-b dark:border-gray-700">
-                      <th className="px-4 py-2 text-left">Thumbnail</th>
+                      <th className="px-4 py-2 text-left w-24">Thumbnail</th>
                       <th className="px-4 py-2 text-left">Title</th>
-                      <th className="px-4 py-2 text-left">Platform</th>
-                      <th className="px-4 py-2 text-left">Creator</th>
-                      <th className="px-4 py-2 text-left">Plays</th>
+                      <th className="px-4 py-2 text-left hidden sm:table-cell">Platform</th>
+                      <th className="px-4 py-2 text-left hidden md:table-cell">Creator</th>
+                      <th className="px-4 py-2 text-left hidden sm:table-cell">Plays</th>
                       <th className="px-4 py-2 text-left">Actions</th>
                     </tr>
                   </thead>
