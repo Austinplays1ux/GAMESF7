@@ -85,45 +85,53 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
         });
         return;
       }
-      
+
       toast({
         title: "Saving changes...",
         description: `Updating ${values.name} platform.`,
       });
-      
+
       // Prepare headers with authentication info
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
-      
+
       if (user?.username) {
         headers['x-username'] = user.username;
       }
-      
-      // Make the API request
-      const updatedPlatform = await apiRequest<Platform>(`/api/platforms/${platform.id}`, {
+
+      // Make the API request with improved error handling
+      const response = await fetch(`/api/platforms/${platform.id}`, {
         method: "PATCH",
         body: JSON.stringify(values),
         headers
       });
-      
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage = errorData.message || 'Failed to update platform';
+        throw new Error(errorMessage);
+      }
+
+      const updatedPlatform = await response.json();
+
       // Update the cache with the confirmed data
       queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
-      
+
       // Close the modal on success
       onClose();
-      
+
       // Show success toast
       toast({
         title: "Platform updated",
         description: `${updatedPlatform.name} platform has been updated successfully.`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to update platform:", error);
-            
+
       toast({
         title: "Error saving changes",
-        description: "There was a problem saving your changes. Please try again.",
+        description: `There was a problem saving your changes: ${error.message}`,
         variant: "destructive"
       });
     } finally {
@@ -146,7 +154,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
             Update the platform's details. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -162,14 +170,14 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="icon"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Icon</FormLabel>
-                  
+
                   <Tabs 
                     defaultValue={iconTab} 
                     onValueChange={(value) => setIconTab(value as "text" | "image")}
@@ -185,7 +193,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                         <span>Platform Images</span>
                       </TabsTrigger>
                     </TabsList>
-                    
+
                     <TabsContent value="text" className="mt-0">
                       <div className="grid grid-cols-4 gap-2 mb-2">
                         {fontAwesomeIcons.map((icon) => (
@@ -213,7 +221,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                         />
                       </FormControl>
                     </TabsContent>
-                    
+
                     <TabsContent value="image" className="mt-0">
                       <div className="grid grid-cols-3 gap-3 mb-3">
                         {platformImages.map((img) => (
@@ -248,12 +256,12 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                       </FormControl>
                     </TabsContent>
                   </Tabs>
-                  
+
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="description"
@@ -267,7 +275,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="color"
@@ -287,7 +295,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                 </FormItem>
               )}
             />
-            
+
             <div className="flex justify-end pt-4 space-x-2">
               <Button variant="outline" type="button" onClick={onClose}>
                 Cancel

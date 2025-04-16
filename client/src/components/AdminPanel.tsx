@@ -80,14 +80,40 @@ export default function AdminPanel() {
     }
   }, [apiGames]);
 
-  const handleEditPlatform = (platform: Platform) => {
-    setSelectedPlatform(platform);
-    setIsPlatformEditModalOpen(true);
+  const handleEditPlatform = async (platform: Platform) => {
+    try {
+      setSelectedPlatform(platform);
+      setIsPlatformEditModalOpen(true);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to edit platform. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleEditGame = (game: GameWithDetails) => {
-    setSelectedGame(game);
-    setIsGameEditModalOpen(true);
+  const handleEditGame = async (game: GameWithDetails) => {
+    try {
+      setSelectedGame(game);
+      setIsGameEditModalOpen(true);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to edit game. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSaveSuccess = () => {
+    // Refetch data after successful save
+    queryClient.invalidateQueries(['/api/platforms']);
+    queryClient.invalidateQueries(['/api/games']);
+    toast({
+      title: "Success",
+      description: "Changes saved successfully.",
+    });
   };
 
   // Filter games based on search query
