@@ -100,25 +100,30 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
       }
 
       // Make the API request with improved error handling
-      const response = await apiRequest(`/api/platforms/${platform.id}`, {
+      const response = await fetch(`/api/platforms/${platform.id}`, {
         method: "PATCH",
+        headers: {
+          'Content-Type': 'application/json',
+          'x-username': user?.username || ''
+        },
         body: JSON.stringify(values),
+        credentials: 'include'
       });
 
-      // Invalidate and refetch platforms data
-      queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update platform');
+      }
+
+      const updatedPlatform = await response.json();
       
-      // Close modal and show success message
+      // Success! Update UI and close modal
+      queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
       onClose();
       toast({
         title: "Success",
         description: "Platform updated successfully"
       });
-
-      if (!response) {
-        const errorData = await response.json();
-        const errorMessage = errorData.message || 'Failed to update platform';
-        throw new Error(errorMessage);
       }
 
       const updatedPlatform = await response.json();
