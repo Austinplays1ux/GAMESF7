@@ -124,9 +124,6 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
         title: "Success",
         description: "Platform updated successfully"
       });
-      }
-
-      const updatedPlatform = await response.json();
 
       // Update the cache with the confirmed data
       queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
