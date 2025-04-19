@@ -111,12 +111,11 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update platform');
+        throw new Error('Failed to update platform');
       }
 
       const updatedPlatform = await response.json();
-      
+
       // Success! Update UI and close modal
       queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
       onClose();
