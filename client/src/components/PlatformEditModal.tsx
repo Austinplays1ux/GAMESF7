@@ -110,30 +110,19 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
         credentials: 'include'
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update platform');
-      }
+      const data = await response.json();
 
-      const updatedPlatform = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update platform');
+      }
 
       // Success! Update UI and close modal
       queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
       onClose();
+      
       toast({
         title: "Success",
-        description: "Platform updated successfully"
-      });
-
-      // Update the cache with the confirmed data
-      queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
-
-      // Close the modal on success
-      onClose();
-
-      // Show success toast
-      toast({
-        title: "Platform updated",
-        description: `${updatedPlatform.name} platform has been updated successfully.`,
+        description: `${data.name} platform has been updated successfully.`
       });
     } catch (error: any) {
       console.error("Failed to update platform:", error);
