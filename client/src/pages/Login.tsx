@@ -1,220 +1,18 @@
-import { useState, useEffect } from "react";
-import { useLocation, useRoute } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { InsertUser } from "@shared/schema";
-import { z } from "zod";
 import Logo from "@/components/Logo";
-import { queryClient } from "@/lib/queryClient";
-
-type LoginFormData = {
-  username: string;
-  password: string;
-};
-
-type SignupFormData = {
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
 
 const Login: React.FC = () => {
   const [, navigate] = useLocation();
-  const [match, params] = useRoute('/auth/:mode?');
-  const { toast } = useToast();
-  const { user, login, register, isLoading: authLoading } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Set initial form state based on URL
-  useEffect(() => {
-    if (match && params && params.mode === 'signup') {
-      setIsLogin(false);
-    } else {
-      setIsLogin(true);
-    }
-  }, [match, params]);
-  
+  const { user, login } = useAuth();
+
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate('/home');
     }
   }, [user, navigate]);
-  
-  // Login form state
-  const [loginForm, setLoginForm] = useState<LoginFormData>({
-    username: "",
-    password: ""
-  });
-  
-  // Signup form state
-  const [signupForm, setSignupForm] = useState<SignupFormData>({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: ""
-  });
-
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!loginForm.username || !loginForm.password) {
-      toast({
-        title: "Missing information",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      console.log("Login form submitted:", loginForm);
-      
-      // Check credentials against valid users
-      const validUsers = [
-        { username: "testuser", password: "password", isAdmin: false, isOwner: false },
-        { username: "admin", password: "admin123", isAdmin: true, isOwner: false },
-        { username: "crystalgamer77", password: "Al998340", isAdmin: true, isOwner: true }
-      ];
-      
-      // Find the user with matching username and password
-      const matchedUser = validUsers.find(
-        user => user.username === loginForm.username && user.password === loginForm.password
-      );
-      
-      if (!matchedUser) {
-        toast({
-          title: "Login failed",
-          description: "Invalid username or password",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      // Create user object for storage
-      const userObj = {
-        id: matchedUser.username === "admin" ? 2 : (matchedUser.username === "crystalgamer77" ? 3 : 1),
-        username: matchedUser.username,
-        email: `${matchedUser.username}@example.com`,
-        isAdmin: matchedUser.isAdmin,
-        isOwner: matchedUser.isOwner
-      };
-      
-      // Store the user in localStorage for persistence across page loads
-      localStorage.setItem('currentUser', JSON.stringify(userObj));
-      
-      // Show success message
-      toast({
-        title: "Login successful!",
-        description: `Welcome back, ${userObj.username}!`,
-      });
-      
-      // Redirect to home page
-      window.location.href = '/home';
-      return;
-      
-    } catch (error) {
-      toast({
-        title: "Login failed",
-        description: "An error occurred during login",
-        variant: "destructive",
-      });
-      console.error("Login failed:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignupSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate form
-    if (!signupForm.username || !signupForm.email || !signupForm.password || !signupForm.confirmPassword) {
-      toast({
-        title: "Missing information",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (signupForm.password !== signupForm.confirmPassword) {
-      toast({
-        title: "Passwords do not match",
-        description: "Please make sure your passwords match",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Enhanced email validation
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(signupForm.email)) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address (e.g., user@example.com)",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if username already exists
-    const validUsers = [
-      { username: "testuser", password: "password", isAdmin: false, isOwner: false },
-      { username: "admin", password: "admin123", isAdmin: true, isOwner: false },
-      { username: "crystalgamer77", password: "Al998340", isAdmin: true, isOwner: true }
-    ];
-    
-    if (validUsers.some(user => user.username === signupForm.username)) {
-      toast({
-        title: "Username already exists",
-        description: "Please choose a different username",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      // Create new user
-      const newUser = {
-        id: 4, // Next available ID
-        username: signupForm.username,
-        email: signupForm.email,
-        isAdmin: false,
-        isOwner: false
-      };
-      
-      // Store new user in localStorage
-      localStorage.setItem('currentUser', JSON.stringify(newUser));
-      
-      // Show success message
-      toast({
-        title: "Account created!",
-        description: `Welcome to GAMESF7, ${newUser.username}!`,
-      });
-      
-      // Redirect to home page
-      window.location.href = '/home';
-    } catch (error) {
-      toast({
-        title: "Registration failed",
-        description: "An error occurred during registration",
-        variant: "destructive",
-      });
-      console.error("Registration failed:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div 
@@ -223,145 +21,33 @@ const Login: React.FC = () => {
         background: "#0c041c",
       }}
     >
-      {/* Left panel with form */}
+      {/* Left panel with login button */}
       <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Logo size="lg" />
             <p className="text-gray-400 mt-4">The ultimate gaming platform</p>
           </div>
-          
-          <div className="glass-modal rounded-lg p-8 shadow-xl">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold gradient-text">
-                {isLogin ? "Welcome back" : "Create an account"}
-              </h2>
-              <p className="text-gray-400 mt-2">
-                {isLogin 
-                  ? "Enter your credentials to access your account" 
-                  : "Fill in the information to create your account"}
-              </p>
-            </div>
-            
-            {isLogin ? (
-              <form onSubmit={handleLoginSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input 
-                    id="username" 
-                    type="text" 
-                    className="glass-input"
-                    placeholder="Enter your username"
-                    value={loginForm.username}
-                    onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    className="glass-input"
-                    placeholder="Enter your password"
-                    value={loginForm.password}
-                    onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-                  />
-                </div>
-                
-                <Button 
-                  type="submit"
-                  className="w-full glass-button text-white py-2"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Logging in..." : "Log in"}
-                </Button>
-                
-                <p className="text-center text-gray-400 mt-4">
-                  Don't have an account?{" "}
-                  <button 
-                    type="button"
-                    className="text-purple-400 hover:text-purple-300"
-                    onClick={() => setIsLogin(false)}
-                  >
-                    Sign up
-                  </button>
-                </p>
-              </form>
-            ) : (
-              <form onSubmit={handleSignupSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-username">Username</Label>
-                  <Input 
-                    id="signup-username" 
-                    type="text" 
-                    className="glass-input"
-                    placeholder="Choose a username"
-                    value={signupForm.username}
-                    onChange={(e) => setSignupForm({...signupForm, username: e.target.value})}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input 
-                    id="signup-email" 
-                    type="email" 
-                    className="glass-input"
-                    placeholder="Enter your email"
-                    value={signupForm.email}
-                    onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input 
-                    id="signup-password" 
-                    type="password" 
-                    className="glass-input"
-                    placeholder="Create a password"
-                    value={signupForm.password}
-                    onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="signup-confirm">Confirm Password</Label>
-                  <Input 
-                    id="signup-confirm" 
-                    type="password" 
-                    className="glass-input"
-                    placeholder="Confirm your password"
-                    value={signupForm.confirmPassword}
-                    onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
-                  />
-                </div>
-                
-                <Button 
-                  type="submit"
-                  className="w-full glass-button text-white py-2"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Creating account..." : "Sign up"}
-                </Button>
-                
-                <p className="text-center text-gray-400 mt-4">
-                  Already have an account?{" "}
-                  <button 
-                    type="button"
-                    className="text-purple-400 hover:text-purple-300"
-                    onClick={() => setIsLogin(true)}
-                  >
-                    Log in
-                  </button>
-                </p>
-              </form>
-            )}
+
+          <div className="glass-modal rounded-lg p-8 shadow-xl text-center">
+            <h2 className="text-2xl font-bold gradient-text mb-6">
+              Welcome to GAMESF7
+            </h2>
+            <p className="text-gray-400 mb-8">
+              Log in with your Replit account to continue
+            </p>
+
+            <button 
+              onClick={login}
+              className="w-full glass-button text-white py-3 px-6 rounded-lg text-lg font-semibold"
+            >
+              <i className="fas fa-sign-in-alt mr-2"></i>
+              Login with Replit
+            </button>
           </div>
         </div>
       </div>
-      
+
       {/* Right panel with hero image/content */}
       <div 
         className="hidden md:flex md:w-1/2 bg-cover bg-center items-center justify-center p-8"
