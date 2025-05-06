@@ -214,9 +214,9 @@ const Home: React.FC = () => {
 
         {/* Platform Highlights */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
-          <div className="bg-gradient-to-r from-purple-900 to-purple-700 rounded-lg p-6 transform transition-transform hover:scale-105">
+          <div className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-lg p-6 transform transition-transform hover:scale-105">
             <div className="mb-4 text-3xl">
-              <i className="fab fa-html5"></i>
+              <img src="/images/platforms/Roblox_2022_icon.webp" alt="Roblox" className="w-12 h-12" />
             </div>
             <h3 className="text-xl font-bold mb-2">HTML Games</h3>
             <p className="text-gray-200 mb-4">Play games directly in your browser without any downloads.</p>
