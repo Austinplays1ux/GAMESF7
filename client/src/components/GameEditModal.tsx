@@ -11,6 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ImageIcon } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface GameEditModalProps {
   game: GameWithDetails | null;
@@ -28,6 +29,7 @@ type GameFormValues = z.infer<typeof gameSchema>;
 export default function GameEditModal({ game, isOpen, onClose }: GameEditModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameSchema),
@@ -41,29 +43,55 @@ export default function GameEditModal({ game, isOpen, onClose }: GameEditModalPr
   const onSubmit = async (values: GameFormValues) => {
     if (!game) return;
 
+    // Check if the user is an admin
+    if (!user?.isAdmin) {
+      toast({
+        title: "Permission denied",
+        description: "You don't have permission to edit games.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
+    
     try {
+      // Show loading state
+      toast({
+        title: "Saving changes...",
+        description: `Updating ${game.title} thumbnail.`,
+      });
+      
+      // Send the update to the server and wait for the response
       const updatedGame = await apiRequest<Game>(`/api/games/${game.id}`, {
         method: "PATCH",
-        body: JSON.stringify(values)
+        body: JSON.stringify(values),
+        headers: {
+          'x-username': user.username // Add admin authentication via headers
+        }
       });
-
-      // Update the cache with the new game data
+      
+      // Update cache with the response from the server
       queryClient.invalidateQueries({ queryKey: ['/api/games'] });
       queryClient.invalidateQueries({ queryKey: ['/api/games/featured'] });
       queryClient.invalidateQueries({ queryKey: ['/api/games/recommended'] });
       
+      // Close the modal on success
+      onClose();
+      
+      // Show success message
       toast({
         title: "Game updated",
-        description: `${updatedGame.title} thumbnail has been updated successfully.`,
+        description: `${game.title} thumbnail has been updated successfully.`,
       });
-      
-      onClose();
     } catch (error) {
       console.error("Failed to update game:", error);
+      
+      const errorMessage = error instanceof Error ? error.message : "Failed to update game thumbnail";
+      console.error("Update error:", error);
       toast({
         title: "Error",
-        description: "Failed to update game thumbnail. Please try again.",
+        description: `${errorMessage}. Please try again.`,
         variant: "destructive"
       });
     } finally {

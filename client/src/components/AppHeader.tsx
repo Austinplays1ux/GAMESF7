@@ -176,8 +176,8 @@ const AppHeader: React.FC = () => {
       </div>
 
       {/* Mobile Menu */}
-      <div className={`md:hidden ${mobileMenuOpen ? '' : 'hidden'}`} id="mobile-menu">
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 glass-dark">
+      <div className={`md:hidden fixed top-16 left-0 right-0 z-50 ${mobileMenuOpen ? '' : 'hidden'}`} id="mobile-menu">
+        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 glass-dark shadow-lg">
           <Link href="/home">
             <div className="block px-3 py-2 rounded-md text-base font-medium sofia-pro text-white hover:bg-purple-900/30 glass-button">
               <i className="fas fa-home mr-2"></i> Home

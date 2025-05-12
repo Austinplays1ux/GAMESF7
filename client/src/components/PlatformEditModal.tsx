@@ -7,11 +7,11 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage, Form } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, ImageIcon, TypeIcon } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface PlatformEditModalProps {
   platform: Platform | null;
@@ -53,6 +53,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
     platform?.icon.startsWith("fa") ? "text" : "image"
   );
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<PlatformFormValues>({
     resolver: zodResolver(platformSchema),
@@ -74,25 +75,61 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
 
     setIsSubmitting(true);
     try {
-      const updatedPlatform = await apiRequest<Platform>(`/api/platforms/${platform.id}`, {
-        method: "PATCH",
-        body: JSON.stringify(values)
+      // Check if the user is admin - if not, show error immediately without network request
+      if (!user?.isAdmin) {
+        toast({
+          title: "Unauthorized",
+          description: "Only admin users can edit platforms.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Saving changes...",
+        description: `Updating ${values.name} platform.`,
       });
 
-      // Update the cache with the new platform data
-      queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
-      
-      toast({
-        title: "Platform updated",
-        description: `${updatedPlatform.name} platform has been updated successfully.`,
+      // Prepare headers with authentication info
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (user?.username) {
+        headers['x-username'] = user.username;
+      }
+
+      // Make the API request with improved error handling
+      const response = await fetch(`/api/platforms/${platform.id}`, {
+        method: "PATCH",
+        headers: {
+          'Content-Type': 'application/json',
+          'x-username': user?.username || ''
+        },
+        body: JSON.stringify(values),
+        credentials: 'include'
       });
-      
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update platform');
+      }
+
+      // Success! Update UI and close modal
+      queryClient.invalidateQueries({ queryKey: ['/api/platforms'] });
       onClose();
-    } catch (error) {
-      console.error("Failed to update platform:", error);
+      
       toast({
-        title: "Error",
-        description: "Failed to update platform. Please try again.",
+        title: "Success",
+        description: `${data.name} platform has been updated successfully.`
+      });
+    } catch (error: any) {
+      console.error("Failed to update platform:", error);
+
+      toast({
+        title: "Error saving changes",
+        description: `There was a problem saving your changes: ${error.message}`,
         variant: "destructive"
       });
     } finally {
@@ -115,7 +152,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
             Update the platform's details. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -131,14 +168,14 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="icon"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Icon</FormLabel>
-                  
+
                   <Tabs 
                     defaultValue={iconTab} 
                     onValueChange={(value) => setIconTab(value as "text" | "image")}
@@ -154,7 +191,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                         <span>Platform Images</span>
                       </TabsTrigger>
                     </TabsList>
-                    
+
                     <TabsContent value="text" className="mt-0">
                       <div className="grid grid-cols-4 gap-2 mb-2">
                         {fontAwesomeIcons.map((icon) => (
@@ -182,7 +219,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                         />
                       </FormControl>
                     </TabsContent>
-                    
+
                     <TabsContent value="image" className="mt-0">
                       <div className="grid grid-cols-3 gap-3 mb-3">
                         {platformImages.map((img) => (
@@ -217,12 +254,12 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                       </FormControl>
                     </TabsContent>
                   </Tabs>
-                  
+
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="description"
@@ -236,7 +273,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="color"
@@ -256,7 +293,7 @@ export default function PlatformEditModal({ platform, isOpen, onClose }: Platfor
                 </FormItem>
               )}
             />
-            
+
             <div className="flex justify-end pt-4 space-x-2">
               <Button variant="outline" type="button" onClick={onClose}>
                 Cancel

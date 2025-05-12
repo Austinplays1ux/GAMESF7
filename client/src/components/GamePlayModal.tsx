@@ -123,12 +123,7 @@ const GamePlayModal: React.FC<GamePlayModalProps> = ({
               <div className="w-32 h-32 mx-auto mb-4 animate-spin rounded-full border-t-4 border-[#007AF4] border-opacity-50"></div>
               <p className="text-lg">Loading game...</p>
             </div>
-          ) : game.htmlContent ? (
-            <div 
-              className="w-full h-full bg-white overflow-hidden"
-              dangerouslySetInnerHTML={{ __html: game.htmlContent }}
-            />
-          ) : (
+          ) : game.platform.name === "HTML" ? (
             <iframe
               ref={iframeRef}
               src={game.gameUrl}
@@ -142,6 +137,26 @@ const GamePlayModal: React.FC<GamePlayModalProps> = ({
                 handleRefreshGame();
               }}
             ></iframe>
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-center p-8">
+              <img 
+                src={game.thumbnailUrl} 
+                alt={game.title} 
+                className="w-full max-w-md mb-6 rounded-lg shadow-lg"
+              />
+              <h3 className="text-xl font-bold mb-2">{game.title}</h3>
+              <p className="mb-4 text-gray-400">
+                This {game.platform.name} game requires the {game.platform.name} client to be installed on your device.
+              </p>
+              <a 
+                href={game.gameUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-[#007AF4] hover:bg-[#0069d9] text-white font-bold py-2 px-6 rounded-lg transition"
+              >
+                Open in {game.platform.name}
+              </a>
+            </div>
           )}
         </div>
         
